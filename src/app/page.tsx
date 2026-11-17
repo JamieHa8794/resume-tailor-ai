@@ -7,26 +7,60 @@ export default function Home() {
   const [jobDescription, setJobDescription] = useState("");
   const [analyzedResume, setAnalyzedResume] = useState("");
   const [analyzedJobDescription, setAnalyzedJobDescription] = useState("");
+  const [error, setError] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const canAnalyze = resume.trim().length > 0 && jobDescription.trim().length > 0;
 
-  function handleAnalyze() {
+  async function handleAnalyze() {
     if (!canAnalyze) return;
 
-    setAnalyzedResume(resume);
-    setAnalyzedJobDescription(jobDescription);
+    setIsAnalyzing(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resume, jobDescription }),
+      });
+      const result: {
+        resume?: unknown;
+        jobDescription?: unknown;
+        error?: unknown;
+      } = await response.json();
+
+      if (!response.ok) {
+        throw new Error(typeof result.error === "string" ? result.error : "Analysis failed.");
+      }
+
+      if (typeof result.resume !== "string" || typeof result.jobDescription !== "string") {
+        throw new Error("Analysis returned an invalid response.");
+      }
+
+      setAnalyzedResume(result.resume);
+      setAnalyzedJobDescription(result.jobDescription);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Analysis failed.");
+      setAnalyzedResume("");
+      setAnalyzedJobDescription("");
+    } finally {
+      setIsAnalyzing(false);
+    }
   }
 
   function handleResumeChange(value: string) {
     setResume(value);
     setAnalyzedResume("");
     setAnalyzedJobDescription("");
+    setError("");
   }
 
   function handleJobDescriptionChange(value: string) {
     setJobDescription(value);
     setAnalyzedResume("");
     setAnalyzedJobDescription("");
+    setError("");
   }
 
   return (
@@ -57,9 +91,10 @@ export default function Home() {
           </label>
         </div>
         <p className="helper-text">Both inputs are required before analysis can continue.</p>
-        <button type="button" onClick={handleAnalyze} disabled={!canAnalyze}>
-          Analyze
+        <button type="button" onClick={handleAnalyze} disabled={!canAnalyze || isAnalyzing}>
+          {isAnalyzing ? "Analyzing..." : "Analyze"}
         </button>
+        {error && <p role="alert">{error}</p>}
       </section>
 
       <section aria-labelledby="output-heading">
