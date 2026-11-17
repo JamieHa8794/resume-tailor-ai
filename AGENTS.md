@@ -20,7 +20,11 @@ This is an AI-assisted tool for tailoring pasted resume content to a pasted job 
 
 # Verification Expectations
 
-- Run relevant available checks and tests before completing implementation work.
+- For implementation changes, run these standard checks:
+  - `pnpm lint`
+  - `pnpm exec tsc --noEmit`
+  - `pnpm build`
+- Run any additional relevant tests when they exist.
 - Summarize what changed.
 - State assumptions made.
 - Report unresolved issues, risks, or limitations.
