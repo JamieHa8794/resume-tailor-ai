@@ -31,8 +31,7 @@ section + section {
   margin-top: 40px;
 }
 
-.input-grid,
-.output-grid {
+.input-grid {
   display: grid;
   gap: 24px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -66,27 +65,27 @@ textarea {
   width: 100%;
 }
 
-.output-panel {
+.clarification-panel {
   border: 1px solid #d4d4d4;
   border-radius: 4px;
-  min-height: 180px;
+  display: grid;
+  gap: 16px;
+  max-width: 720px;
   padding: 16px;
 }
 
-.output-panel h3 {
-  font-size: 1rem;
+.button-row {
+  display: flex;
+  gap: 8px;
 }
 
-pre {
-  font: inherit;
-  min-height: 120px;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
+textarea:disabled {
+  background: #f5f5f5;
+  color: #525252;
 }
 
 @media (max-width: 700px) {
-  .input-grid,
-  .output-grid {
+  .input-grid {
     grid-template-columns: 1fr;
   }
 }

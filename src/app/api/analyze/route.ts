@@ -29,7 +29,9 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({
-    resume: body.resume,
-    jobDescription: body.jobDescription,
+    clarification: {
+      id: "clarification-1",
+      question: "Which accomplishment from your resume would you most like to emphasize for this role?",
+    },
   });
 }
