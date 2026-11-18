@@ -74,6 +74,20 @@ textarea {
   padding: 16px;
 }
 
+.suggestion-panel {
+  border: 1px solid #d4d4d4;
+  border-radius: 4px;
+  display: grid;
+  gap: 20px;
+  max-width: 720px;
+  padding: 16px;
+}
+
+.suggestion-panel h3 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
 .button-row {
   display: flex;
   gap: 8px;
