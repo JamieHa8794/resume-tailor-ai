@@ -15,6 +15,7 @@ type Suggestion = {
   id: string;
   originalBullet: string;
   suggestedBullet: string;
+  savedSuggestedBullet?: string;
   decision: ReviewDecision;
   selectedBullet: string | null;
   isEditing: boolean;
@@ -181,6 +182,7 @@ export default function Home() {
     if (suggestion.suggestedBullet.trim().length === 0) return;
 
     updateSuggestion(suggestion.id, {
+      savedSuggestedBullet: suggestion.suggestedBullet,
       decision: "edited",
       selectedBullet: suggestion.suggestedBullet,
       isEditing: false,
@@ -188,16 +190,30 @@ export default function Home() {
   }
 
   function handleCancelEditSuggestion(suggestion: Suggestion) {
+    const originalSuggestedBullet =
+      mockedSuggestions.find((item) => item.id === suggestion.id)!.suggestedBullet;
+
     updateSuggestion(suggestion.id, {
-      suggestedBullet: mockedSuggestions.find((item) => item.id === suggestion.id)!.suggestedBullet,
-      decision: "pending",
-      selectedBullet: null,
+      suggestedBullet: suggestion.savedSuggestedBullet ?? originalSuggestedBullet,
       isEditing: false,
     });
   }
 
   function handleChangeDecision(id: string) {
     updateSuggestion(id, { decision: "pending", selectedBullet: null });
+  }
+
+  function handleRevertChanges(suggestion: Suggestion) {
+    const originalSuggestedBullet =
+      mockedSuggestions.find((item) => item.id === suggestion.id)!.suggestedBullet;
+
+    updateSuggestion(suggestion.id, {
+      suggestedBullet: originalSuggestedBullet,
+      savedSuggestedBullet: originalSuggestedBullet,
+      decision: "pending",
+      selectedBullet: null,
+      isEditing: false,
+    });
   }
 
   useEffect(() => {
@@ -421,6 +437,16 @@ export default function Home() {
                         Change decision
                       </button>
                     )}
+                    {suggestion.suggestedBullet !==
+                      mockedSuggestions.find((item) => item.id === suggestion.id)!.suggestedBullet && (
+                        <button
+                          type="button"
+                          onClick={() => handleRevertChanges(suggestion)}
+                          disabled={actionsDisabled}
+                        >
+                          Revert Changes
+                        </button>
+                      )}
                   </div>
                   {suggestion.decision !== "pending" && (
                     <p className="helper-text">
