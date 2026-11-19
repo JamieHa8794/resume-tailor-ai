@@ -83,6 +83,12 @@ textarea {
   padding: 16px;
 }
 
+.suggestion-list {
+  display: grid;
+  gap: 24px;
+  max-width: 720px;
+}
+
 .suggestion-panel h3 {
   font-size: 1rem;
   margin-bottom: 8px;

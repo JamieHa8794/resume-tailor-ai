@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Clarification = {
   id: string;
@@ -9,10 +9,44 @@ type Clarification = {
 
 type WorkflowStage = "input" | "clarifying" | "complete";
 type ReviewDecision = "pending" | "accepted" | "rejected" | "edited";
+type ReviewSubmissionStatus = "idle" | "submitting" | "succeeded" | "failed";
 
-const originalBullet = "• Coordinated cross-functional projects to deliver work on schedule.";
-const mockedSuggestedBullet =
-  "• Led cross-functional projects from planning through delivery, consistently meeting deadlines.";
+type Suggestion = {
+  id: string;
+  originalBullet: string;
+  suggestedBullet: string;
+  decision: ReviewDecision;
+  selectedBullet: string | null;
+  isEditing: boolean;
+};
+
+const mockedSuggestions: Suggestion[] = [
+  {
+    id: "suggestion-1",
+    originalBullet: "• Coordinated cross-functional projects to deliver work on schedule.",
+    suggestedBullet:
+      "• Led cross-functional projects from planning through delivery, consistently meeting deadlines.",
+    decision: "pending",
+    selectedBullet: null,
+    isEditing: false,
+  },
+  {
+    id: "suggestion-2",
+    originalBullet: "• Created weekly reports for project stakeholders.",
+    suggestedBullet: "• Delivered clear weekly project reports to keep stakeholders aligned.",
+    decision: "pending",
+    selectedBullet: null,
+    isEditing: false,
+  },
+  {
+    id: "suggestion-3",
+    originalBullet: "• Improved the team's process for handling incoming requests.",
+    suggestedBullet: "• Streamlined incoming request handling to improve team efficiency.",
+    decision: "pending",
+    selectedBullet: null,
+    isEditing: false,
+  },
+];
 
 export default function Home() {
   const [resume, setResume] = useState("");
@@ -21,11 +55,13 @@ export default function Home() {
   const [clarification, setClarification] = useState<Clarification | null>(null);
   const [clarificationAnswer, setClarificationAnswer] = useState("");
   const [clarificationSkipped, setClarificationSkipped] = useState(false);
-  const [suggestedBullet, setSuggestedBullet] = useState(mockedSuggestedBullet);
-  const [reviewDecision, setReviewDecision] = useState<ReviewDecision>("pending");
-  const [selectedBullet, setSelectedBullet] = useState<string | null>(null);
-  const [isEditingSuggestion, setIsEditingSuggestion] = useState(false);
-  const [error, setError] = useState("");
+  const [suggestions, setSuggestions] = useState<Suggestion[]>(mockedSuggestions);
+  const [reviewSubmissionStatus, setReviewSubmissionStatus] =
+    useState<ReviewSubmissionStatus>("idle");
+  const [reviewConfirmation, setReviewConfirmation] = useState("");
+  const reviewSubmissionStarted = useRef(false);
+  const [inputError, setInputError] = useState("");
+  const [reviewError, setReviewError] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const canAnalyze = resume.trim().length > 0 && jobDescription.trim().length > 0;
@@ -34,7 +70,7 @@ export default function Home() {
     if (!canAnalyze) return;
 
     setIsAnalyzing(true);
-    setError("");
+    setInputError("");
 
     try {
       const response = await fetch("/api/analyze", {
@@ -65,13 +101,13 @@ export default function Home() {
       });
       setClarificationAnswer("");
       setClarificationSkipped(false);
-      setSuggestedBullet(mockedSuggestedBullet);
-      setReviewDecision("pending");
-      setSelectedBullet(null);
-      setIsEditingSuggestion(false);
+      setSuggestions(mockedSuggestions);
+      setReviewSubmissionStatus("idle");
+      setReviewConfirmation("");
+      reviewSubmissionStarted.current = false;
       setWorkflowStage("clarifying");
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Analysis failed.");
+      setInputError(requestError instanceof Error ? requestError.message : "Analysis failed.");
       setClarification(null);
       setWorkflowStage("input");
     } finally {
@@ -81,12 +117,12 @@ export default function Home() {
 
   function handleResumeChange(value: string) {
     setResume(value);
-    setError("");
+    setInputError("");
   }
 
   function handleJobDescriptionChange(value: string) {
     setJobDescription(value);
-    setError("");
+    setInputError("");
   }
 
   function handleSubmitClarification() {
@@ -107,40 +143,118 @@ export default function Home() {
     setClarification(null);
     setClarificationAnswer("");
     setClarificationSkipped(false);
-    setSuggestedBullet(mockedSuggestedBullet);
-    setReviewDecision("pending");
-    setSelectedBullet(null);
-    setIsEditingSuggestion(false);
-    setError("");
+    setSuggestions(mockedSuggestions);
+    setReviewSubmissionStatus("idle");
+    setReviewConfirmation("");
+    setReviewError("");
+    reviewSubmissionStarted.current = false;
+    setInputError("");
   }
 
-  function handleAcceptSuggestion() {
-    setSelectedBullet(suggestedBullet);
-    setReviewDecision("accepted");
+  function updateSuggestion(id: string, update: Partial<Suggestion>) {
+    setSuggestions((currentSuggestions) =>
+      currentSuggestions.map((suggestion) =>
+        suggestion.id === id ? { ...suggestion, ...update } : suggestion,
+      ),
+    );
   }
 
-  function handleRejectSuggestion() {
-    setSelectedBullet(originalBullet);
-    setReviewDecision("rejected");
+  function handleAcceptSuggestion(suggestion: Suggestion) {
+    updateSuggestion(suggestion.id, {
+      decision: "accepted",
+      selectedBullet: suggestion.suggestedBullet,
+    });
   }
 
-  function handleEditSuggestion() {
-    setIsEditingSuggestion(true);
+  function handleRejectSuggestion(suggestion: Suggestion) {
+    updateSuggestion(suggestion.id, {
+      decision: "rejected",
+      selectedBullet: suggestion.originalBullet,
+    });
   }
 
-  function handleSaveSuggestion() {
-    if (suggestedBullet.trim().length === 0) return;
-
-    setSelectedBullet(suggestedBullet);
-    setReviewDecision("edited");
-    setIsEditingSuggestion(false);
+  function handleEditSuggestion(id: string) {
+    updateSuggestion(id, { isEditing: true });
   }
 
-  function handleCancelEditSuggestion() {
-    setSuggestedBullet(mockedSuggestedBullet);
-    setSelectedBullet(null);
-    setReviewDecision("pending");
-    setIsEditingSuggestion(false);
+  function handleSaveSuggestion(suggestion: Suggestion) {
+    if (suggestion.suggestedBullet.trim().length === 0) return;
+
+    updateSuggestion(suggestion.id, {
+      decision: "edited",
+      selectedBullet: suggestion.suggestedBullet,
+      isEditing: false,
+    });
+  }
+
+  function handleCancelEditSuggestion(suggestion: Suggestion) {
+    updateSuggestion(suggestion.id, {
+      suggestedBullet: mockedSuggestions.find((item) => item.id === suggestion.id)!.suggestedBullet,
+      decision: "pending",
+      selectedBullet: null,
+      isEditing: false,
+    });
+  }
+
+  function handleChangeDecision(id: string) {
+    updateSuggestion(id, { decision: "pending", selectedBullet: null });
+  }
+
+  useEffect(() => {
+    const reviewIsComplete =
+      workflowStage === "complete" &&
+      suggestions.length > 0 &&
+      suggestions.every((suggestion) => suggestion.decision !== "pending");
+
+    if (
+      !reviewIsComplete ||
+      reviewSubmissionStatus !== "idle" ||
+      reviewSubmissionStarted.current
+    ) {
+      return;
+    }
+
+    reviewSubmissionStarted.current = true;
+
+    void (async () => {
+      setReviewSubmissionStatus("submitting");
+      setReviewError("");
+
+      try {
+        const response = await fetch("/api/review", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            suggestions: suggestions.map(({ id, decision, selectedBullet }) => ({
+              id,
+              decision,
+              selectedBullet,
+            })),
+          }),
+        });
+        const result: { message?: unknown; error?: unknown } = await response.json();
+        if (!response.ok) {
+          throw new Error(typeof result.error === "string" ? result.error : "Review submission failed.");
+        }
+        if (result.message !== "review complete") {
+          throw new Error("Review returned an invalid response.");
+        }
+        setReviewConfirmation(result.message);
+        setReviewSubmissionStatus("succeeded");
+      } catch (requestError) {
+        setReviewSubmissionStatus("failed");
+        setReviewError(
+          requestError instanceof Error ? requestError.message : "Review submission failed.",
+        );
+      }
+    })();
+  }, [reviewSubmissionStatus, suggestions, workflowStage]);
+
+  function handleRetryReview() {
+    reviewSubmissionStarted.current = false;
+    setReviewConfirmation("");
+    setReviewError("");
+    setReviewSubmissionStatus("idle");
   }
 
   return (
@@ -180,7 +294,7 @@ export default function Home() {
         >
           {isAnalyzing ? "Analyzing..." : "Analyze"}
         </button>
-        {error && <p role="alert">{error}</p>}
+        {inputError && <p role="alert">{inputError}</p>}
       </section>
 
       <section aria-labelledby="clarification-heading">
@@ -229,59 +343,102 @@ export default function Home() {
 
       {workflowStage === "complete" && (
         <section aria-labelledby="suggestion-heading">
-          <h2 id="suggestion-heading">Suggested Change</h2>
-          <div className="suggestion-panel">
-            <div>
-              <h3>Original resume bullet</h3>
-              <p>{originalBullet}</p>
-            </div>
-            <div>
-              <h3>Suggested replacement</h3>
-              {isEditingSuggestion ? (
-                <textarea
-                  aria-label="Suggested replacement"
-                  value={suggestedBullet}
-                  onChange={(event) => setSuggestedBullet(event.target.value)}
-                  rows={4}
-                />
-              ) : (
-                <p>{suggestedBullet}</p>
-              )}
-            </div>
-            <div className="button-row">
-              {isEditingSuggestion ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleSaveSuggestion}
-                    disabled={suggestedBullet.trim().length === 0}
-                  >
-                    Save
-                  </button>
-                  <button type="button" onClick={handleCancelEditSuggestion}>
-                    Cancel Edit
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button type="button" onClick={handleAcceptSuggestion}>
-                    Accept
-                  </button>
-                  <button type="button" onClick={handleRejectSuggestion}>
-                    Reject
-                  </button>
-                  <button type="button" onClick={handleEditSuggestion}>
-                    Edit
-                  </button>
-                </>
-              )}
-            </div>
-            {reviewDecision !== "pending" && (
-              <p className="helper-text">
-                Suggestion {reviewDecision}. Selected result: {selectedBullet}
-              </p>
-            )}
+          <h2 id="suggestion-heading">Suggested Changes</h2>
+          <div className="suggestion-list">
+            {suggestions.map((suggestion) => {
+              const actionsDisabled = reviewSubmissionStatus !== "idle";
+
+              return (
+                <div className="suggestion-panel" key={suggestion.id}>
+                  <div>
+                    <h3>Original resume bullet</h3>
+                    <p>{suggestion.originalBullet}</p>
+                  </div>
+                  <div>
+                    <h3>Suggested replacement</h3>
+                    {suggestion.isEditing ? (
+                      <textarea
+                        aria-label={`Suggested replacement for ${suggestion.id}`}
+                        value={suggestion.suggestedBullet}
+                        onChange={(event) =>
+                          updateSuggestion(suggestion.id, { suggestedBullet: event.target.value })
+                        }
+                        rows={4}
+                        disabled={actionsDisabled}
+                      />
+                    ) : (
+                      <p>{suggestion.suggestedBullet}</p>
+                    )}
+                  </div>
+                  <div className="button-row">
+                    {suggestion.isEditing ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveSuggestion(suggestion)}
+                          disabled={actionsDisabled || suggestion.suggestedBullet.trim().length === 0}
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCancelEditSuggestion(suggestion)}
+                          disabled={actionsDisabled}
+                        >
+                          Cancel Edit
+                        </button>
+                      </>
+                    ) : suggestion.decision === "pending" ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleAcceptSuggestion(suggestion)}
+                          disabled={actionsDisabled}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRejectSuggestion(suggestion)}
+                          disabled={actionsDisabled}
+                        >
+                          Reject
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleEditSuggestion(suggestion.id)}
+                          disabled={actionsDisabled}
+                        >
+                          Edit
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleChangeDecision(suggestion.id)}
+                        disabled={actionsDisabled}
+                      >
+                        Change decision
+                      </button>
+                    )}
+                  </div>
+                  {suggestion.decision !== "pending" && (
+                    <p className="helper-text">
+                      Suggestion {suggestion.decision}. Selected result: {suggestion.selectedBullet}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
+          {reviewSubmissionStatus === "submitting" && <p>Submitting review...</p>}
+          {reviewError && <p role="alert">{reviewError}</p>}
+          {reviewSubmissionStatus === "failed" && (
+            <button type="button" onClick={handleRetryReview}>
+              Retry
+            </button>
+          )}
+          {reviewConfirmation && <p>{reviewConfirmation}</p>}
         </section>
       )}
     </main>
