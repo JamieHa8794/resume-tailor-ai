@@ -7,7 +7,7 @@ type Clarification = {
   question: string;
 };
 
-type WorkflowStage = "input" | "clarifying" | "complete";
+type WorkflowStage = "input" | "clarifying" | "suggestions" | "complete";
 type ReviewDecision = "pending" | "accepted" | "rejected" | "edited";
 type ReviewSubmissionStatus = "idle" | "submitting" | "succeeded" | "failed";
 
@@ -15,39 +15,14 @@ type Suggestion = {
   id: string;
   originalBullet: string;
   suggestedBullet: string;
+  initialSuggestedBullet: string;
   savedSuggestedBullet?: string;
   decision: ReviewDecision;
   selectedBullet: string | null;
   isEditing: boolean;
 };
 
-const mockedSuggestions: Suggestion[] = [
-  {
-    id: "suggestion-1",
-    originalBullet: "• Coordinated cross-functional projects to deliver work on schedule.",
-    suggestedBullet:
-      "• Led cross-functional projects from planning through delivery, consistently meeting deadlines.",
-    decision: "pending",
-    selectedBullet: null,
-    isEditing: false,
-  },
-  {
-    id: "suggestion-2",
-    originalBullet: "• Created weekly reports for project stakeholders.",
-    suggestedBullet: "• Delivered clear weekly project reports to keep stakeholders aligned.",
-    decision: "pending",
-    selectedBullet: null,
-    isEditing: false,
-  },
-  {
-    id: "suggestion-3",
-    originalBullet: "• Improved the team's process for handling incoming requests.",
-    suggestedBullet: "• Streamlined incoming request handling to improve team efficiency.",
-    decision: "pending",
-    selectedBullet: null,
-    isEditing: false,
-  },
-];
+type SuggestionResponse = Pick<Suggestion, "id" | "originalBullet" | "suggestedBullet">;
 
 export default function Home() {
   const [resume, setResume] = useState("");
@@ -56,15 +31,17 @@ export default function Home() {
   const [clarification, setClarification] = useState<Clarification | null>(null);
   const [clarificationAnswer, setClarificationAnswer] = useState("");
   const [clarificationSkipped, setClarificationSkipped] = useState(false);
-  const [suggestions, setSuggestions] = useState<Suggestion[]>(mockedSuggestions);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [reviewSubmissionStatus, setReviewSubmissionStatus] =
     useState<ReviewSubmissionStatus>("idle");
   const [reviewConfirmation, setReviewConfirmation] = useState("");
   const [finalOutput, setFinalOutput] = useState("");
   const reviewSubmissionStarted = useRef(false);
   const [inputError, setInputError] = useState("");
+  const [suggestionsError, setSuggestionsError] = useState("");
   const [reviewError, setReviewError] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   const canAnalyze = resume.trim().length > 0 && jobDescription.trim().length > 0;
 
@@ -81,7 +58,8 @@ export default function Home() {
         body: JSON.stringify({ resume, jobDescription }),
       });
       const result: {
-        clarification?: { id?: unknown; question?: unknown };
+        needsClarification?: unknown;
+        clarification?: { id?: unknown; question?: unknown } | null;
         error?: unknown;
       } = await response.json();
 
@@ -89,32 +67,67 @@ export default function Home() {
         throw new Error(typeof result.error === "string" ? result.error : "Analysis failed.");
       }
 
-      if (
+      if (result.needsClarification === true && (
         !result.clarification ||
         typeof result.clarification.id !== "string" ||
         typeof result.clarification.question !== "string"
-      ) {
+      )) {
         throw new Error("Analysis returned an invalid response.");
       }
 
-      setClarification({
-        id: result.clarification.id,
-        question: result.clarification.question,
-      });
+      if (result.needsClarification !== true && result.needsClarification !== false) {
+        throw new Error("Analysis returned an invalid response.");
+      }
+      setClarification(result.needsClarification ? {
+        id: result.clarification!.id as string,
+        question: result.clarification!.question as string,
+      } : null);
       setClarificationAnswer("");
       setClarificationSkipped(false);
-      setSuggestions(mockedSuggestions);
+      setSuggestions([]);
       setReviewSubmissionStatus("idle");
       setReviewConfirmation("");
       setFinalOutput("");
+      setSuggestionsError("");
       reviewSubmissionStarted.current = false;
-      setWorkflowStage("clarifying");
+      if (result.needsClarification) {
+        setWorkflowStage("clarifying");
+      } else {
+        setClarificationSkipped(false);
+        await loadSuggestions();
+      }
     } catch (requestError) {
       setInputError(requestError instanceof Error ? requestError.message : "Analysis failed.");
       setClarification(null);
       setWorkflowStage("input");
     } finally {
       setIsAnalyzing(false);
+    }
+  }
+
+  async function loadSuggestions() {
+    setWorkflowStage("suggestions");
+    setIsLoadingSuggestions(true);
+    setSuggestionsError("");
+    try {
+      const response = await fetch("/api/suggestions", { method: "POST" });
+      const result: { suggestions?: SuggestionResponse[]; error?: unknown } = await response.json();
+      if (!response.ok || !Array.isArray(result.suggestions)) {
+        throw new Error(typeof result.error === "string" ? result.error : "Suggestions failed.");
+      }
+      setSuggestions(result.suggestions.map((suggestion) => ({
+        ...suggestion,
+        initialSuggestedBullet: suggestion.suggestedBullet,
+        decision: "pending",
+        selectedBullet: null,
+        isEditing: false,
+      })));
+    } catch (requestError) {
+      setSuggestionsError(
+        requestError instanceof Error ? requestError.message : "Suggestions failed.",
+      );
+    } finally {
+      setIsLoadingSuggestions(false);
     }
   }
 
@@ -132,13 +145,13 @@ export default function Home() {
     if (clarificationAnswer.trim().length === 0) return;
 
     setClarificationSkipped(false);
-    setWorkflowStage("complete");
+    void loadSuggestions();
   }
 
   function handleSkipClarification() {
     setClarificationAnswer("");
     setClarificationSkipped(true);
-    setWorkflowStage("complete");
+    void loadSuggestions();
   }
 
   function handleEditInputs() {
@@ -146,10 +159,11 @@ export default function Home() {
     setClarification(null);
     setClarificationAnswer("");
     setClarificationSkipped(false);
-    setSuggestions(mockedSuggestions);
+    setSuggestions([]);
     setReviewSubmissionStatus("idle");
     setReviewConfirmation("");
     setFinalOutput("");
+    setSuggestionsError("");
     setReviewError("");
     reviewSubmissionStarted.current = false;
     setInputError("");
@@ -193,11 +207,8 @@ export default function Home() {
   }
 
   function handleCancelEditSuggestion(suggestion: Suggestion) {
-    const originalSuggestedBullet =
-      mockedSuggestions.find((item) => item.id === suggestion.id)!.suggestedBullet;
-
     updateSuggestion(suggestion.id, {
-      suggestedBullet: suggestion.savedSuggestedBullet ?? originalSuggestedBullet,
+      suggestedBullet: suggestion.savedSuggestedBullet ?? suggestion.initialSuggestedBullet,
       isEditing: false,
     });
   }
@@ -207,12 +218,9 @@ export default function Home() {
   }
 
   function handleRevertChanges(suggestion: Suggestion) {
-    const originalSuggestedBullet =
-      mockedSuggestions.find((item) => item.id === suggestion.id)!.suggestedBullet;
-
     updateSuggestion(suggestion.id, {
-      suggestedBullet: originalSuggestedBullet,
-      savedSuggestedBullet: originalSuggestedBullet,
+      suggestedBullet: suggestion.initialSuggestedBullet,
+      savedSuggestedBullet: suggestion.initialSuggestedBullet,
       decision: "pending",
       selectedBullet: null,
       isEditing: false,
@@ -221,7 +229,7 @@ export default function Home() {
 
   useEffect(() => {
     const reviewIsComplete =
-      workflowStage === "complete" &&
+      workflowStage === "suggestions" &&
       suggestions.length > 0 &&
       suggestions.every((suggestion) => suggestion.decision !== "pending");
 
@@ -265,6 +273,7 @@ export default function Home() {
         setReviewConfirmation(result.message);
         setFinalOutput(result.finalOutput);
         setReviewSubmissionStatus("succeeded");
+        setWorkflowStage("complete");
       } catch (requestError) {
         setReviewSubmissionStatus("failed");
         setReviewError(
@@ -280,6 +289,10 @@ export default function Home() {
     setFinalOutput("");
     setReviewError("");
     setReviewSubmissionStatus("idle");
+  }
+
+  function handleRetrySuggestions() {
+    void loadSuggestions();
   }
 
   async function handleCopyFinalOutput() {
@@ -355,11 +368,11 @@ export default function Home() {
             </div>
           </div>
         )}
-        {workflowStage === "complete" && (
+        {(workflowStage === "suggestions" || workflowStage === "complete") && (
           <div className="clarification-panel">
             <p>Clarification complete</p>
             <p className="helper-text">
-              {clarificationSkipped ? "The question was skipped." : "Your answer was recorded."}
+              {clarification ? (clarificationSkipped ? "The question was skipped." : "Your answer was recorded.") : "No clarification questions needed."}
             </p>
           </div>
         )}
@@ -370,10 +383,17 @@ export default function Home() {
         )}
       </section>
 
-      {workflowStage === "complete" && (
+      {workflowStage === "suggestions" && (
         <section aria-labelledby="suggestion-heading">
           <h2 id="suggestion-heading">Suggested Changes</h2>
-          <div className="suggestion-list">
+          {isLoadingSuggestions && <p>Generating suggestions...</p>}
+          {suggestionsError && <p role="alert">{suggestionsError}</p>}
+          {suggestionsError && !isLoadingSuggestions && (
+            <button type="button" onClick={handleRetrySuggestions}>
+              Retry
+            </button>
+          )}
+          {!isLoadingSuggestions && suggestions.length > 0 && <div className="suggestion-list">
             {suggestions.map((suggestion) => {
               const actionsDisabled = reviewSubmissionStatus !== "idle";
 
@@ -450,8 +470,7 @@ export default function Home() {
                         Change decision
                       </button>
                     )}
-                    {suggestion.suggestedBullet !==
-                      mockedSuggestions.find((item) => item.id === suggestion.id)!.suggestedBullet && (
+                    {suggestion.suggestedBullet !== suggestion.initialSuggestedBullet && (
                         <button
                           type="button"
                           onClick={() => handleRevertChanges(suggestion)}
@@ -459,7 +478,7 @@ export default function Home() {
                         >
                           Revert Changes
                         </button>
-                      )}
+                    )}
                   </div>
                   {suggestion.decision !== "pending" && (
                     <p className="helper-text">
@@ -469,7 +488,7 @@ export default function Home() {
                 </div>
               );
             })}
-          </div>
+          </div>}
           {reviewSubmissionStatus === "submitting" && <p>Submitting review...</p>}
           {reviewError && <p role="alert">{reviewError}</p>}
           {reviewSubmissionStatus === "failed" && (
