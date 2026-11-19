@@ -60,6 +60,7 @@ export default function Home() {
   const [reviewSubmissionStatus, setReviewSubmissionStatus] =
     useState<ReviewSubmissionStatus>("idle");
   const [reviewConfirmation, setReviewConfirmation] = useState("");
+  const [finalOutput, setFinalOutput] = useState("");
   const reviewSubmissionStarted = useRef(false);
   const [inputError, setInputError] = useState("");
   const [reviewError, setReviewError] = useState("");
@@ -105,6 +106,7 @@ export default function Home() {
       setSuggestions(mockedSuggestions);
       setReviewSubmissionStatus("idle");
       setReviewConfirmation("");
+      setFinalOutput("");
       reviewSubmissionStarted.current = false;
       setWorkflowStage("clarifying");
     } catch (requestError) {
@@ -147,6 +149,7 @@ export default function Home() {
     setSuggestions(mockedSuggestions);
     setReviewSubmissionStatus("idle");
     setReviewConfirmation("");
+    setFinalOutput("");
     setReviewError("");
     reviewSubmissionStarted.current = false;
     setInputError("");
@@ -248,14 +251,19 @@ export default function Home() {
             })),
           }),
         });
-        const result: { message?: unknown; error?: unknown } = await response.json();
+        const result: { message?: unknown; finalOutput?: unknown; error?: unknown } =
+          await response.json();
         if (!response.ok) {
           throw new Error(typeof result.error === "string" ? result.error : "Review submission failed.");
         }
         if (result.message !== "review complete") {
           throw new Error("Review returned an invalid response.");
         }
+        if (typeof result.finalOutput !== "string") {
+          throw new Error("Review returned an invalid final output.");
+        }
         setReviewConfirmation(result.message);
+        setFinalOutput(result.finalOutput);
         setReviewSubmissionStatus("succeeded");
       } catch (requestError) {
         setReviewSubmissionStatus("failed");
@@ -269,8 +277,13 @@ export default function Home() {
   function handleRetryReview() {
     reviewSubmissionStarted.current = false;
     setReviewConfirmation("");
+    setFinalOutput("");
     setReviewError("");
     setReviewSubmissionStatus("idle");
+  }
+
+  async function handleCopyFinalOutput() {
+    await navigator.clipboard.writeText(finalOutput);
   }
 
   return (
@@ -465,6 +478,16 @@ export default function Home() {
             </button>
           )}
           {reviewConfirmation && <p>{reviewConfirmation}</p>}
+        </section>
+      )}
+
+      {reviewSubmissionStatus === "succeeded" && (
+        <section aria-labelledby="final-output-heading">
+          <h2 id="final-output-heading">Final Output</h2>
+          <textarea value={finalOutput} readOnly rows={12} aria-label="Final resume output" />
+          <button type="button" onClick={handleCopyFinalOutput}>
+            Copy
+          </button>
         </section>
       )}
     </main>
