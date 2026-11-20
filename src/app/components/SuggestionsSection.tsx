@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { SuggestionCard } from './SuggestionCard';
-import type { ReviewSubmissionStatus, Suggestion } from './workflow-types';
+import type {
+  SuggestionResponseSubmissionStatus,
+  Suggestion,
+} from './workflow-types';
 
 type SuggestionResponse = Pick<
   Suggestion,
@@ -12,11 +15,12 @@ export function SuggestionsSection({ onComplete }: SuggestionsSectionProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [suggestionsError, setSuggestionsError] = useState('');
-  const [reviewSubmissionStatus, setReviewSubmissionStatus] =
-    useState<ReviewSubmissionStatus>('idle');
-  const [reviewError, setReviewError] = useState('');
-  const [reviewConfirmation, setReviewConfirmation] = useState('');
-  const reviewSubmissionStarted = useRef(false);
+  const [suggestionResponseSubmissionStatus, setSuggestionResponseSubmissionStatus] =
+    useState<SuggestionResponseSubmissionStatus>('idle');
+  const [suggestionResponseError, setSuggestionResponseError] = useState('');
+  const [suggestionResponseConfirmation, setSuggestionResponseConfirmation] =
+    useState('');
+  const suggestionResponseSubmissionStarted = useRef(false);
 
   async function loadSuggestions() {
     setIsLoadingSuggestions(true);
@@ -103,21 +107,21 @@ export function SuggestionsSection({ onComplete }: SuggestionsSectionProps) {
   }
 
   useEffect(() => {
-    const reviewIsComplete =
+    const suggestionResponseIsComplete =
       suggestions.length > 0 &&
       suggestions.every((suggestion) => suggestion.decision !== 'pending');
     if (
-      !reviewIsComplete ||
-      reviewSubmissionStatus !== 'idle' ||
-      reviewSubmissionStarted.current
+      !suggestionResponseIsComplete ||
+      suggestionResponseSubmissionStatus !== 'idle' ||
+      suggestionResponseSubmissionStarted.current
     )
       return;
-    reviewSubmissionStarted.current = true;
+    suggestionResponseSubmissionStarted.current = true;
     void (async () => {
-      setReviewSubmissionStatus('submitting');
-      setReviewError('');
+      setSuggestionResponseSubmissionStatus('submitting');
+      setSuggestionResponseError('');
       try {
-        const response = await fetch('/api/review', {
+        const response = await fetch('/api/suggestion-response', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -150,25 +154,25 @@ export function SuggestionsSection({ onComplete }: SuggestionsSectionProps) {
               ? 'Review returned an invalid response.'
               : 'Review returned an invalid final output.',
           );
-        setReviewConfirmation(result.message);
-        setReviewSubmissionStatus('succeeded');
+        setSuggestionResponseConfirmation(result.message);
+        setSuggestionResponseSubmissionStatus('succeeded');
         onComplete(result.finalOutput);
       } catch (requestError) {
-        setReviewSubmissionStatus('failed');
-        setReviewError(
+        setSuggestionResponseSubmissionStatus('failed');
+        setSuggestionResponseError(
           requestError instanceof Error
             ? requestError.message
             : 'Review submission failed.',
         );
       }
     })();
-  }, [onComplete, reviewSubmissionStatus, suggestions]);
+  }, [onComplete, suggestionResponseSubmissionStatus, suggestions]);
 
-  function handleRetryReview() {
-    reviewSubmissionStarted.current = false;
-    setReviewConfirmation('');
-    setReviewError('');
-    setReviewSubmissionStatus('idle');
+  function handleRetrySuggestionResponse() {
+    suggestionResponseSubmissionStarted.current = false;
+    setSuggestionResponseConfirmation('');
+    setSuggestionResponseError('');
+    setSuggestionResponseSubmissionStatus('idle');
   }
 
   return (
@@ -187,7 +191,7 @@ export function SuggestionsSection({ onComplete }: SuggestionsSectionProps) {
             <SuggestionCard
               key={suggestion.id}
               suggestion={suggestion}
-              actionsDisabled={reviewSubmissionStatus !== 'idle'}
+              actionsDisabled={suggestionResponseSubmissionStatus !== 'idle'}
               onUpdate={updateSuggestion}
               onAccept={handleAccept}
               onReject={handleReject}
@@ -205,14 +209,14 @@ export function SuggestionsSection({ onComplete }: SuggestionsSectionProps) {
           ))}
         </div>
       )}
-      {reviewSubmissionStatus === 'submitting' && <p>Submitting review...</p>}
-      {reviewError && <p role="alert">{reviewError}</p>}
-      {reviewSubmissionStatus === 'failed' && (
-        <button type="button" onClick={handleRetryReview}>
+      {suggestionResponseSubmissionStatus === 'submitting' && <p>Submitting review...</p>}
+      {suggestionResponseError && <p role="alert">{suggestionResponseError}</p>}
+      {suggestionResponseSubmissionStatus === 'failed' && (
+        <button type="button" onClick={handleRetrySuggestionResponse}>
           Retry
         </button>
       )}
-      {reviewConfirmation && <p>{reviewConfirmation}</p>}
+      {suggestionResponseConfirmation && <p>{suggestionResponseConfirmation}</p>}
     </section>
   );
 }

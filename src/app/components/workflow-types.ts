@@ -7,7 +7,7 @@ export type ClarificationStatus = 'pending' | 'answered' | 'skipped';
 
 export type WorkflowStage = 'input' | 'clarifying' | 'suggestions' | 'complete';
 export type ReviewDecision = 'pending' | 'accepted' | 'rejected' | 'edited';
-export type ReviewSubmissionStatus =
+export type SuggestionResponseSubmissionStatus =
   | 'idle'
   | 'submitting'
   | 'succeeded'
