@@ -9,16 +9,14 @@ import type { Clarification, WorkflowStage } from './components/workflow-types';
 
 export default function ResumeTailor() {
   const [workflowStage, setWorkflowStage] = useState<WorkflowStage>('input');
-  const [clarification, setClarification] = useState<Clarification | null>(
-    null,
-  );
+  const [clarifications, setClarifications] = useState<Clarification[]>([]);
   const [finalOutput, setFinalOutput] = useState('');
 
   function handleAnalysisComplete(
     needsClarification: boolean,
-    nextClarification: Clarification | null,
+    nextClarifications: Clarification[],
   ) {
-    setClarification(nextClarification);
+    setClarifications(nextClarifications);
     setFinalOutput('');
     setWorkflowStage(needsClarification ? 'clarifying' : 'suggestions');
   }
@@ -29,7 +27,7 @@ export default function ResumeTailor() {
 
   function handleEditInputs() {
     setWorkflowStage('input');
-    setClarification(null);
+    setClarifications([]);
     setFinalOutput('');
   }
 
@@ -41,9 +39,9 @@ export default function ResumeTailor() {
         onAnalysisComplete={handleAnalysisComplete}
       />
       <ClarificationSection
-        key={clarification?.id ?? 'none'}
+        key={clarifications.map(({ id }) => id).join(',') || 'none'}
         workflowStage={workflowStage}
-        clarification={clarification}
+        clarifications={clarifications}
         onComplete={handleClarificationComplete}
         onEditInputs={handleEditInputs}
       />

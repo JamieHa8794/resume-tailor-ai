@@ -38,12 +38,24 @@ export async function POST(request: Request) {
     mockNeedsClarification
       ? {
           needsClarification: true,
-          clarification: {
-            id: 'clarification-1',
-            question:
-              'Which accomplishment from your resume would you most like to emphasize for this role?',
-          },
+          clarifications: [
+            {
+              id: 'clarification-1',
+              question:
+                'Which accomplishment from your resume would you most like to emphasize for this role?',
+            },
+            {
+              id: 'clarification-2',
+              question:
+                'Which relevant skill or technology would you like to provide more detail about?',
+            },
+            {
+              id: 'clarification-3',
+              question:
+                'Is there any related experience not fully represented in your resume?',
+            },
+          ],
         }
-      : { needsClarification: false, clarification: null },
+      : { needsClarification: false, clarifications: [] },
   );
 }

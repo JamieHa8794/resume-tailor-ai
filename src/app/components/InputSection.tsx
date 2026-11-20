@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import type { WorkflowStage } from './workflow-types';
+import type { Clarification, WorkflowStage } from './workflow-types';
 
 type InputSectionProps = {
   workflowStage: WorkflowStage;
   onAnalysisComplete: (
     needsClarification: boolean,
-    clarification: { id: string; question: string } | null,
+    clarifications: Clarification[],
   ) => void;
 };
 
@@ -32,7 +32,7 @@ export function InputSection({
       });
       const result: {
         needsClarification?: unknown;
-        clarification?: { id?: unknown; question?: unknown } | null;
+        clarifications?: unknown;
         error?: unknown;
       } = await response.json();
       if (!response.ok)
@@ -41,9 +41,14 @@ export function InputSection({
         );
       if (
         result.needsClarification === true &&
-        (!result.clarification ||
-          typeof result.clarification.id !== 'string' ||
-          typeof result.clarification.question !== 'string')
+        (!Array.isArray(result.clarifications) ||
+          result.clarifications.some(
+            (clarification) =>
+              !clarification ||
+              typeof clarification !== 'object' ||
+              typeof clarification.id !== 'string' ||
+              typeof clarification.question !== 'string',
+          ))
       ) {
         throw new Error('Analysis returned an invalid response.');
       }
@@ -56,11 +61,8 @@ export function InputSection({
       onAnalysisComplete(
         result.needsClarification,
         result.needsClarification
-          ? {
-              id: result.clarification!.id as string,
-              question: result.clarification!.question as string,
-            }
-          : null,
+          ? (result.clarifications as Clarification[])
+          : [],
       );
     } catch (requestError) {
       setInputError(

@@ -74,6 +74,12 @@ textarea {
   padding: 16px;
 }
 
+.clarification-list {
+  display: grid;
+  gap: 24px;
+  max-width: 720px;
+}
+
 .suggestion-panel {
   border: 1px solid #d4d4d4;
   border-radius: 4px;
