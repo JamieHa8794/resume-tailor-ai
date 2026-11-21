@@ -38,14 +38,16 @@ export default function ResumeTailor() {
         workflowStage={workflowStage}
         onAnalysisComplete={handleAnalysisComplete}
       />
-      <ClarificationSection
-        key={clarifications.map(({ id }) => id).join(',') || 'none'}
-        workflowStage={workflowStage}
-        clarifications={clarifications}
-        onComplete={handleClarificationComplete}
-        onEditInputs={handleEditInputs}
-      />
-      {workflowStage === 'suggestions' && (
+      {workflowStage !== 'input' && (
+        <ClarificationSection
+          key={clarifications.map(({ id }) => id).join(',') || 'none'}
+          workflowStage={workflowStage}
+          clarifications={clarifications}
+          onComplete={handleClarificationComplete}
+          onEditInputs={handleEditInputs}
+        />
+      )}
+      {(workflowStage === 'suggestions' || workflowStage === 'complete') && (
         <SuggestionsSection
           onComplete={(output) => {
             setFinalOutput(output);
