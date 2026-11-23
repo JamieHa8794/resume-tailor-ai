@@ -4,6 +4,7 @@ import type {
   ClarificationResult,
   WorkflowStage,
 } from './workflow-types';
+import styles from './ClarificationSection.module.css';
 
 type ClarificationSectionProps = {
   workflowStage: WorkflowStage;
@@ -34,17 +35,31 @@ export function ClarificationSection({
   }
 
   return (
-    <section aria-labelledby="clarification-heading">
-      <h2 id="clarification-heading">Clarification</h2>
+    <section className={styles.section} aria-labelledby="clarification-heading">
+      <div className={styles.headingRow}>
+        <h2 id="clarification-heading">Clarification</h2>
+        {(workflowStage === 'suggestions' || workflowStage === 'complete') &&
+          clarifications.length > 0 && (
+            <button
+              className={styles.editButton}
+              type="button"
+              onClick={onEditClarifications}
+            >
+              Edit
+            </button>
+          )}
+      </div>
       {workflowStage === 'input' && (
-        <p>Analyze your inputs to receive clarification questions.</p>
+        <p className={styles.emptyMessage}>
+          Analyze your inputs to receive clarification questions.
+        </p>
       )}
       {workflowStage === 'clarifying' && (
-        <div className="clarification-list">
+        <div className={styles.clarificationList}>
           {clarifications.map((question) => (
-            <div className="clarification-panel" key={question.id}>
-              <p>{question.question}</p>
-              <label className="field">
+            <div className={styles.questionGroup} key={question.id}>
+              <p className={styles.question}>{question.question}</p>
+              <label className={styles.answerField}>
                 <span>Your answer</span>
                 <textarea
                   value={answers[question.id] ?? ''}
@@ -55,18 +70,43 @@ export function ClarificationSection({
                     }))
                   }
                   placeholder="Enter an answer, or leave blank to skip"
-                  rows={5}
+                  rows={1}
                 />
               </label>
             </div>
           ))}
-          <button type="button" onClick={handleContinue}>
+          <button
+            className={styles.continueButton}
+            type="button"
+            onClick={handleContinue}
+          >
             Continue
           </button>
         </div>
       )}
-      {(workflowStage === 'suggestions' || workflowStage === 'complete') && (
-        <div className="clarification-panel">
+      {(workflowStage === 'suggestions' || workflowStage === 'complete') &&
+        clarifications.length > 0 && (
+          <div className={styles.completedList}>
+            {clarifications.map((question) => {
+              const answer = answers[question.id] ?? '';
+              return (
+                <div className={styles.completedQuestion} key={question.id}>
+                  <p className={styles.question}>{question.question}</p>
+                  <p
+                    className={`${styles.completedAnswer} ${
+                      answer ? '' : styles.skippedAnswer
+                    }`}
+                  >
+                    {answer || 'Skipped'}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      {(workflowStage === 'suggestions' || workflowStage === 'complete') &&
+        clarifications.length === 0 && (
+        <div className={`${styles.completedPanel} ${styles.noQuestionsPanel}`}>
           <p>Clarification complete</p>
           <p className="helper-text">
             {clarifications.length > 0
@@ -74,11 +114,6 @@ export function ClarificationSection({
               : 'No clarification questions needed.'}
           </p>
         </div>
-      )}
-      {(workflowStage === 'suggestions' || workflowStage === 'complete') && (
-        <button type="button" onClick={onEditClarifications}>
-          Edit
-        </button>
       )}
     </section>
   );
