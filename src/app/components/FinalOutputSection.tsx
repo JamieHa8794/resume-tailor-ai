@@ -1,3 +1,5 @@
+import styles from './FinalOutputSection.module.css';
+
 type FinalOutputSectionProps = { finalOutput: string };
 
 export function FinalOutputSection({ finalOutput }: FinalOutputSectionProps) {
@@ -6,17 +8,25 @@ export function FinalOutputSection({ finalOutput }: FinalOutputSectionProps) {
   }
 
   return (
-    <section aria-labelledby="final-output-heading">
+    <section className={styles.section} aria-labelledby="final-output-heading">
       <h2 id="final-output-heading">Final Output</h2>
-      <textarea
-        value={finalOutput}
-        readOnly
-        rows={12}
-        aria-label="Final resume output"
-      />
-      <button type="button" onClick={handleCopyFinalOutput}>
-        Copy
-      </button>
+      <p className={styles.subtitle}>
+        A complete, edited résumé is ready to copy as a single document.
+      </p>
+      <div className={styles.documentSurface}>
+        <div className={styles.documentToolbar}>
+          <button type="button" onClick={handleCopyFinalOutput}>
+            Copy
+          </button>
+        </div>
+        <textarea
+          className={styles.document}
+          value={finalOutput}
+          readOnly
+          rows={12}
+          aria-label="Final resume output"
+        />
+      </div>
     </section>
   );
 }

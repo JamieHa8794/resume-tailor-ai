@@ -1,0 +1,86 @@
+.section {
+  color: var(--espresso);
+  font-family: var(--font-family);
+}
+
+.section h2 {
+  color: var(--espresso);
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  line-height: 52px;
+  margin: 0 0 40px;
+  text-align: center;
+}
+
+.subtitle {
+  color: var(--espresso);
+  font-size: var(--text-lg);
+  line-height: 30px;
+  margin: -16px auto 40px;
+  max-width: 760px;
+  text-align: center;
+}
+
+.documentToolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--sand);
+  display: flex;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0 0 var(--space-16);
+}
+
+.documentToolbar button {
+  background: var(--raspberry);
+  border: 1px solid var(--raspberry);
+  border-radius: var(--radius-control);
+  color: var(--ivory);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 700;
+  line-height: 24px;
+  min-height: 44px;
+  padding: 10px 20px;
+}
+
+.documentToolbar button:hover {
+  background: var(--raspberry-dark);
+  border-color: var(--raspberry-dark);
+}
+
+.documentToolbar button:focus-visible,
+.document:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.document {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: var(--espresso);
+  display: block;
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  line-height: 28px;
+  margin: 24px 0 0;
+  min-height: 320px;
+  padding: var(--space-24);
+  resize: vertical;
+}
+
+.documentSurface {
+  background: var(--ivory);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-control);
+  margin: 0 auto;
+  max-width: 760px;
+  padding: var(--space-24);
+}
+
+@media (max-width: 700px) {
+  .section h2 {
+    font-size: var(--text-3xl);
+    line-height: 40px;
+  }
+}
