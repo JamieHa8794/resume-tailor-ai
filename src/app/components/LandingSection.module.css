@@ -1,0 +1,71 @@
+.section {
+  font-family: var(--font-family);
+  min-height: calc(100vh - 80px);
+}
+
+.header {
+  align-items: center;
+  border-bottom: 1px solid var(--sand);
+  display: flex;
+  height: 64px;
+}
+
+.wordmark {
+  color: var(--espresso);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  line-height: 30px;
+}
+
+.content {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100vh - 144px);
+  text-align: center;
+}
+
+.content h1 {
+  color: var(--espresso);
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 72px;
+  margin: 0;
+}
+
+.supportingText {
+  color: var(--espresso);
+  font-size: var(--text-lg);
+  line-height: 30px;
+  margin-top: var(--space-24);
+}
+
+.start {
+  background: var(--raspberry-deep);
+  border: 1px solid var(--raspberry-deep);
+  border-radius: var(--radius-control);
+  color: var(--ivory);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 700;
+  line-height: 24px;
+  margin-top: var(--space-32);
+  min-height: 48px;
+  padding: 12px 32px;
+}
+
+.start:hover {
+  background: var(--raspberry-dark);
+  border-color: var(--raspberry-dark);
+}
+
+.start:active {
+  background: var(--raspberry-deep);
+  border-color: var(--raspberry-deep);
+}
+
+.start:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
+}
