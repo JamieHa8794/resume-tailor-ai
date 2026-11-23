@@ -1,0 +1,30 @@
+.section { color: var(--espresso); font-family: var(--font-family); }
+.headingRow { margin-bottom: 40px; position: relative; }
+.headingRow h2 { font-size: var(--text-4xl); font-weight: 700; line-height: 52px; margin: 0; text-align: center; }
+.editButton, .secondaryButton { background: transparent; border: 1px solid var(--raspberry); border-radius: var(--radius-control); color: var(--espresso); font-family: inherit; font-size: var(--text-base); line-height: 24px; min-height: 44px; padding: 10px 20px; }
+.editButton { position: absolute; right: 0; top: 0; }
+.editButton:hover, .secondaryButton:hover:not(:disabled) { background: var(--blush); }
+.suggestionList { display: grid; gap: var(--space-32); margin: 0 auto; max-width: 760px; }
+.suggestionPanel { background: var(--ivory); border: 1px solid var(--sand); border-radius: var(--radius-control); display: grid; gap: var(--space-24); padding: var(--space-24); }
+.comparisonBlock { display: grid; gap: var(--space-8); }
+.comparisonBlock h3 { color: var(--mocha); font-size: var(--text-sm); font-weight: 400; line-height: 24px; margin: 0; }
+.originalWording { color: var(--espresso); font-size: var(--text-lg); line-height: 30px; }
+.suggestedWording { color: var(--espresso); font-size: var(--text-3xl); line-height: 36px; }
+.editingField { background: transparent; border: 0; border-bottom: 2px solid var(--raspberry); border-radius: 0; color: var(--espresso); font-family: inherit; font-size: 22px; font-style: italic; line-height: 32px; min-height: 88px; padding: 6px 0; }
+.editingField:focus { outline: none; }
+.buttonRow { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+.primaryButton, .continueButton { background: var(--raspberry); border: 1px solid var(--raspberry); border-radius: var(--radius-control); color: var(--ivory); font-family: inherit; font-size: var(--text-base); font-weight: 700; line-height: 24px; min-height: 44px; padding: 10px 20px; }
+.primaryButton:hover:not(:disabled), .continueButton:hover:not(:disabled) { background: var(--raspberry-dark); border-color: var(--raspberry-dark); }
+.continueButton { display: block; margin: var(--space-24) auto 0; }
+.textButton { background: transparent; border: 0; color: var(--mocha); font-family: inherit; font-size: var(--text-base); line-height: 24px; padding: 10px 0; text-decoration: underline; }
+.decisionStatus { border-top: 1px solid var(--sand); color: var(--mocha); font-size: var(--text-sm); font-style: italic; line-height: 24px; margin: 0; padding-top: var(--space-16); }
+.status, .error, .confirmation { margin: var(--space-16) auto 0; max-width: 760px; text-align: center; }
+.error { color: var(--raspberry-deep); }
+.confirmation { color: var(--mocha); font-style: italic; }
+button:focus-visible, .editingField:focus-visible { outline: var(--focus-ring); outline-offset: 3px; }
+button:disabled { background: var(--sand); border-color: var(--sand); color: var(--mocha); }
+@media (max-width: 700px) {
+  .headingRow h2 { font-size: var(--text-3xl); line-height: 40px; padding-right: 96px; }
+  .editButton { padding: 8px 16px; }
+  .suggestedWording { font-size: var(--text-2xl); line-height: 32px; }
+}

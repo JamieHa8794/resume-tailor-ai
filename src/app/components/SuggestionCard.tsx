@@ -1,4 +1,5 @@
 import type { Suggestion } from './workflow-types';
+import styles from './SuggestionsSection.module.css';
 
 type SuggestionCardProps = {
   suggestion: Suggestion;
@@ -26,15 +27,16 @@ export function SuggestionCard({
   onRevert,
 }: SuggestionCardProps) {
   return (
-    <div className="suggestion-panel">
-      <div>
+    <article className={styles.suggestionPanel}>
+      <div className={styles.comparisonBlock}>
         <h3>Original resume bullet</h3>
-        <p>{suggestion.originalBullet}</p>
+        <p className={styles.originalWording}>{suggestion.originalBullet}</p>
       </div>
-      <div>
+      <div className={styles.comparisonBlock}>
         <h3>Suggested replacement</h3>
         {suggestion.isEditing ? (
           <textarea
+            className={styles.editingField}
             aria-label={`Suggested replacement for ${suggestion.id}`}
             value={suggestion.suggestedBullet}
             onChange={(event) =>
@@ -44,13 +46,14 @@ export function SuggestionCard({
             disabled={actionsDisabled}
           />
         ) : (
-          <p>{suggestion.suggestedBullet}</p>
+          <p className={styles.suggestedWording}>{suggestion.suggestedBullet}</p>
         )}
       </div>
-      <div className="button-row">
+      <div className={styles.buttonRow}>
         {suggestion.isEditing ? (
           <>
             <button
+              className={styles.primaryButton}
               type="button"
               onClick={() => onSave(suggestion)}
               disabled={
@@ -61,6 +64,7 @@ export function SuggestionCard({
               Save
             </button>
             <button
+              className={styles.secondaryButton}
               type="button"
               onClick={() => onCancelEdit(suggestion)}
               disabled={actionsDisabled}
@@ -71,6 +75,7 @@ export function SuggestionCard({
         ) : suggestion.decision === 'pending' ? (
           <>
             <button
+              className={styles.primaryButton}
               type="button"
               onClick={() => onAccept(suggestion)}
               disabled={actionsDisabled}
@@ -78,6 +83,7 @@ export function SuggestionCard({
               Accept
             </button>
             <button
+              className={styles.secondaryButton}
               type="button"
               onClick={() => onReject(suggestion)}
               disabled={actionsDisabled}
@@ -85,6 +91,7 @@ export function SuggestionCard({
               Reject
             </button>
             <button
+              className={styles.secondaryButton}
               type="button"
               onClick={() => onEdit(suggestion.id)}
               disabled={actionsDisabled}
@@ -94,6 +101,7 @@ export function SuggestionCard({
           </>
         ) : (
           <button
+            className={styles.secondaryButton}
             type="button"
             onClick={() => onChangeDecision(suggestion.id)}
             disabled={actionsDisabled}
@@ -103,6 +111,7 @@ export function SuggestionCard({
         )}
         {suggestion.suggestedBullet !== suggestion.initialSuggestedBullet && (
           <button
+            className={styles.textButton}
             type="button"
             onClick={() => onRevert(suggestion)}
             disabled={actionsDisabled}
@@ -112,11 +121,11 @@ export function SuggestionCard({
         )}
       </div>
       {suggestion.decision !== 'pending' && (
-        <p className="helper-text">
+        <p className={styles.decisionStatus}>
           Suggestion {suggestion.decision}. Selected result:{' '}
           {suggestion.selectedBullet}
         </p>
       )}
-    </div>
+    </article>
   );
 }

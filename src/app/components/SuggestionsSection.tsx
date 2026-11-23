@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SuggestionCard } from './SuggestionCard';
+import styles from './SuggestionsSection.module.css';
 import type {
   ClarificationResult,
   SuggestionResponseSubmissionStatus,
@@ -196,17 +197,24 @@ export function SuggestionsSection({
   }
 
   return (
-    <section aria-labelledby="suggestion-heading">
-      <h2 id="suggestion-heading">Suggested Changes</h2>
-      {isLoadingSuggestions && <p>Generating suggestions...</p>}
-      {suggestionsError && <p role="alert">{suggestionsError}</p>}
+    <section className={styles.section} aria-labelledby="suggestion-heading">
+      <div className={styles.headingRow}>
+        <h2 id="suggestion-heading">Suggested Changes</h2>
+        {workflowStage === 'complete' && (
+          <button className={styles.editButton} type="button" onClick={handleEdit}>
+            Edit
+          </button>
+        )}
+      </div>
+      {isLoadingSuggestions && <p className={styles.status}>Generating suggestions...</p>}
+      {suggestionsError && <p className={styles.error} role="alert">{suggestionsError}</p>}
       {suggestionsError && !isLoadingSuggestions && (
-        <button type="button" onClick={() => void loadSuggestions()}>
+        <button className={styles.secondaryButton} type="button" onClick={() => void loadSuggestions()}>
           Retry
         </button>
       )}
       {!isLoadingSuggestions && suggestions.length > 0 && (
-        <div className="suggestion-list">
+        <div className={styles.suggestionList}>
           {suggestions.map((suggestion) => (
             <SuggestionCard
               key={suggestion.id}
@@ -230,6 +238,7 @@ export function SuggestionsSection({
         </div>
       )}
       <button
+        className={styles.continueButton}
         type="button"
         onClick={handleContinue}
         disabled={
@@ -240,19 +249,14 @@ export function SuggestionsSection({
       >
         Continue
       </button>
-      {suggestionResponseSubmissionStatus === 'submitting' && <p>Submitting review...</p>}
-      {suggestionResponseError && <p role="alert">{suggestionResponseError}</p>}
+      {suggestionResponseSubmissionStatus === 'submitting' && <p className={styles.status}>Submitting review...</p>}
+      {suggestionResponseError && <p className={styles.error} role="alert">{suggestionResponseError}</p>}
       {suggestionResponseSubmissionStatus === 'failed' && (
-        <button type="button" onClick={handleRetrySuggestionResponse}>
+        <button className={styles.secondaryButton} type="button" onClick={handleRetrySuggestionResponse}>
           Retry
         </button>
       )}
-      {suggestionResponseConfirmation && <p>{suggestionResponseConfirmation}</p>}
-      {workflowStage === 'complete' && (
-        <button type="button" onClick={handleEdit}>
-          Edit
-        </button>
-      )}
+      {suggestionResponseConfirmation && <p className={styles.confirmation}>{suggestionResponseConfirmation}</p>}
     </section>
   );
 }
