@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Clarification, WorkflowStage } from './workflow-types';
+import styles from './InputSection.module.css';
 
 type InputSectionProps = {
   workflowStage: WorkflowStage;
@@ -78,10 +79,17 @@ export function InputSection({
   }
 
   return (
-    <section aria-labelledby="input-heading">
-      <h2 id="input-heading">Inputs</h2>
-      <div className="input-grid">
-        <label className="field">
+    <section className={styles.section} aria-labelledby="input-heading">
+      <div className={styles.headingRow}>
+        <h2 id="input-heading">Inputs</h2>
+        {workflowStage !== 'input' && (
+          <button className={styles.editButton} type="button" onClick={onEdit}>
+            Edit
+          </button>
+        )}
+      </div>
+      <div className={styles.inputGrid}>
+        <label className={styles.field}>
           <span>Resume Input</span>
           <textarea
             value={resume}
@@ -94,7 +102,7 @@ export function InputSection({
             disabled={workflowStage !== 'input' || isAnalyzing}
           />
         </label>
-        <label className="field">
+        <label className={styles.field}>
           <span>Job Description</span>
           <textarea
             value={jobDescription}
@@ -112,6 +120,7 @@ export function InputSection({
         Both inputs are required before analysis can continue.
       </p>
       <button
+        className={styles.analyzeButton}
         type="button"
         onClick={handleAnalyze}
         disabled={!canAnalyze || isAnalyzing || workflowStage !== 'input'}
@@ -119,11 +128,6 @@ export function InputSection({
         {isAnalyzing ? 'Analyzing...' : 'Analyze'}
       </button>
       {inputError && <p role="alert">{inputError}</p>}
-      {workflowStage !== 'input' && (
-        <button type="button" onClick={onEdit}>
-          Edit
-        </button>
-      )}
     </section>
   );
 }
