@@ -43,6 +43,16 @@ export default function ResumeTailor() {
     setFinalOutput('');
   }
 
+  function handleEditClarifications() {
+    setWorkflowStage('clarifying');
+    setFinalOutput('');
+  }
+
+  function handleEditSuggestions() {
+    setWorkflowStage('suggestions');
+    setFinalOutput('');
+  }
+
   return (
     <main className="page-shell">
       {workflowStage === 'landing' && (
@@ -54,6 +64,7 @@ export default function ResumeTailor() {
           <InputSection
             workflowStage={workflowStage}
             onAnalysisComplete={handleAnalysisComplete}
+            onEdit={handleEditInputs}
           />
         </>
       )}
@@ -63,12 +74,14 @@ export default function ResumeTailor() {
           workflowStage={workflowStage}
           clarifications={clarifications}
           onComplete={handleClarificationComplete}
-          onEditInputs={handleEditInputs}
+          onEditClarifications={handleEditClarifications}
         />
       )}
       {(workflowStage === 'suggestions' || workflowStage === 'complete') && (
         <SuggestionsSection
           clarificationResults={clarificationResults}
+          workflowStage={workflowStage}
+          onEdit={handleEditSuggestions}
           onComplete={(output) => {
             setFinalOutput(output);
             setWorkflowStage('complete');

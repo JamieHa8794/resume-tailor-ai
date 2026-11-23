@@ -4,6 +4,7 @@ import type {
   ClarificationResult,
   SuggestionResponseSubmissionStatus,
   Suggestion,
+  WorkflowStage,
 } from './workflow-types';
 
 type SuggestionResponse = Pick<
@@ -12,12 +13,16 @@ type SuggestionResponse = Pick<
 >;
 type SuggestionsSectionProps = {
   clarificationResults: ClarificationResult[];
+  workflowStage: WorkflowStage;
   onComplete: (finalOutput: string) => void;
+  onEdit: () => void;
 };
 
 export function SuggestionsSection({
   clarificationResults,
+  workflowStage,
   onComplete,
+  onEdit,
 }: SuggestionsSectionProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
@@ -183,6 +188,13 @@ export function SuggestionsSection({
     void submitSuggestionResponses();
   }
 
+  function handleEdit() {
+    setSuggestionResponseConfirmation('');
+    setSuggestionResponseError('');
+    setSuggestionResponseSubmissionStatus('idle');
+    onEdit();
+  }
+
   return (
     <section aria-labelledby="suggestion-heading">
       <h2 id="suggestion-heading">Suggested Changes</h2>
@@ -236,6 +248,11 @@ export function SuggestionsSection({
         </button>
       )}
       {suggestionResponseConfirmation && <p>{suggestionResponseConfirmation}</p>}
+      {workflowStage === 'complete' && (
+        <button type="button" onClick={handleEdit}>
+          Edit
+        </button>
+      )}
     </section>
   );
 }

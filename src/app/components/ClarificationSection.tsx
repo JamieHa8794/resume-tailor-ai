@@ -9,14 +9,14 @@ type ClarificationSectionProps = {
   workflowStage: WorkflowStage;
   clarifications: Clarification[];
   onComplete: (results: ClarificationResult[]) => void;
-  onEditInputs: () => void;
+  onEditClarifications: () => void;
 };
 
 export function ClarificationSection({
   workflowStage,
   clarifications,
   onComplete,
-  onEditInputs,
+  onEditClarifications,
 }: ClarificationSectionProps) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
@@ -75,9 +75,9 @@ export function ClarificationSection({
           </p>
         </div>
       )}
-      {workflowStage !== 'input' && (
-        <button type="button" onClick={onEditInputs}>
-          Edit Inputs
+      {(workflowStage === 'suggestions' || workflowStage === 'complete') && (
+        <button type="button" onClick={onEditClarifications}>
+          Edit
         </button>
       )}
     </section>

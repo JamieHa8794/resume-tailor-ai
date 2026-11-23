@@ -7,11 +7,13 @@ type InputSectionProps = {
     needsClarification: boolean,
     clarifications: Clarification[],
   ) => void;
+  onEdit: () => void;
 };
 
 export function InputSection({
   workflowStage,
   onAnalysisComplete,
+  onEdit,
 }: InputSectionProps) {
   const [resume, setResume] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -117,6 +119,11 @@ export function InputSection({
         {isAnalyzing ? 'Analyzing...' : 'Analyze'}
       </button>
       {inputError && <p role="alert">{inputError}</p>}
+      {workflowStage !== 'input' && (
+        <button type="button" onClick={onEdit}>
+          Edit
+        </button>
+      )}
     </section>
   );
 }
