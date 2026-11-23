@@ -17,15 +17,15 @@ export function FinalOutputSection({
 
   return (
     <section className={styles.section} aria-labelledby="final-output-heading">
-      <h2 id="final-output-heading">Final Output</h2>
+      <h2 id="final-output-heading">Your tailored résumé is ready</h2>
       <p className={styles.subtitle}>
-        A complete, edited résumé is ready to copy as a single document.
-      </p>
-      <p>
-        {appliedCount} of {totalCount} suggested changes applied
+        Copy the full text into your résumé document.
       </p>
       <div className={styles.documentSurface}>
         <div className={styles.documentToolbar}>
+          <span className={styles.count}>
+            {appliedCount} of {totalCount} suggested changes applied
+          </span>
           <button type="button" onClick={handleCopyFinalOutput}>
             Copy
           </button>
