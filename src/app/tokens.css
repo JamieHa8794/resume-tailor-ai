@@ -1,0 +1,34 @@
+:root {
+  /* Palette */
+  --linen: #f8f1e5;
+  --ivory: #fffcf8;
+  --espresso: #35221d;
+  --mocha: #756457;
+  --taupe: #918174;
+  --sand: #d6cabe;
+  --raspberry: #a52f58;
+  --raspberry-dark: #90284c;
+  --raspberry-deep: #792040;
+  --blush: #f1dfde;
+
+  /* Type sizes assume a 16px root. */
+  --font-family: Georgia, "Times New Roman", serif;
+  --text-xs: 0.875rem; /* 14px */
+  --text-sm: 1rem; /* 16px */
+  --text-base: 1.125rem; /* 18px */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.375rem; /* 22px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.75rem; /* 28px */
+  --text-4xl: 2.75rem; /* 44px */
+
+  /* Shared spacing */
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+
+  /* Shared controls */
+  --radius-control: 8px;
+  --focus-ring: 2px solid var(--raspberry);
+}
