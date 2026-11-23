@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SuggestionCard } from './SuggestionCard';
 import type {
   ClarificationResult,
@@ -27,7 +27,6 @@ export function SuggestionsSection({
   const [suggestionResponseError, setSuggestionResponseError] = useState('');
   const [suggestionResponseConfirmation, setSuggestionResponseConfirmation] =
     useState('');
-  const suggestionResponseSubmissionStarted = useRef(false);
 
   async function loadSuggestions() {
     setIsLoadingSuggestions(true);
@@ -117,73 +116,71 @@ export function SuggestionsSection({
     });
   }
 
-  useEffect(() => {
-    const suggestionResponseIsComplete =
-      suggestions.length > 0 &&
-      suggestions.every((suggestion) => suggestion.decision !== 'pending');
-    if (
-      !suggestionResponseIsComplete ||
-      suggestionResponseSubmissionStatus !== 'idle' ||
-      suggestionResponseSubmissionStarted.current
-    )
-      return;
-    suggestionResponseSubmissionStarted.current = true;
-    void (async () => {
-      setSuggestionResponseSubmissionStatus('submitting');
-      setSuggestionResponseError('');
-      try {
-        const response = await fetch('/api/suggestion-response', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            suggestions: suggestions.map(
-              ({ id, decision, selectedBullet }) => ({
-                id,
-                decision,
-                selectedBullet,
-              }),
-            ),
-          }),
-        });
-        const result: {
-          message?: unknown;
-          finalOutput?: unknown;
-          error?: unknown;
-        } = await response.json();
-        if (!response.ok)
-          throw new Error(
-            typeof result.error === 'string'
-              ? result.error
-              : 'Review submission failed.',
-          );
-        if (
-          result.message !== 'review complete' ||
-          typeof result.finalOutput !== 'string'
-        )
-          throw new Error(
-            result.message !== 'review complete'
-              ? 'Review returned an invalid response.'
-              : 'Review returned an invalid final output.',
-          );
-        setSuggestionResponseConfirmation(result.message);
-        setSuggestionResponseSubmissionStatus('succeeded');
-        onComplete(result.finalOutput);
-      } catch (requestError) {
-        setSuggestionResponseSubmissionStatus('failed');
-        setSuggestionResponseError(
-          requestError instanceof Error
-            ? requestError.message
+  async function submitSuggestionResponses() {
+    setSuggestionResponseSubmissionStatus('submitting');
+    setSuggestionResponseError('');
+    try {
+      const response = await fetch('/api/suggestion-response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          suggestions: suggestions.map(
+            ({ id, decision, selectedBullet }) => ({
+              id,
+              decision,
+              selectedBullet,
+            }),
+          ),
+        }),
+      });
+      const result: {
+        message?: unknown;
+        finalOutput?: unknown;
+        error?: unknown;
+      } = await response.json();
+      if (!response.ok)
+        throw new Error(
+          typeof result.error === 'string'
+            ? result.error
             : 'Review submission failed.',
         );
-      }
-    })();
-  }, [onComplete, suggestionResponseSubmissionStatus, suggestions]);
+      if (
+        result.message !== 'review complete' ||
+        typeof result.finalOutput !== 'string'
+      )
+        throw new Error(
+          result.message !== 'review complete'
+            ? 'Review returned an invalid response.'
+            : 'Review returned an invalid final output.',
+        );
+      setSuggestionResponseConfirmation(result.message);
+      setSuggestionResponseSubmissionStatus('succeeded');
+      onComplete(result.finalOutput);
+    } catch (requestError) {
+      setSuggestionResponseSubmissionStatus('failed');
+      setSuggestionResponseError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Review submission failed.',
+      );
+    }
+  }
+
+  function handleContinue() {
+    if (
+      suggestions.length === 0 ||
+      suggestions.some((suggestion) => suggestion.decision === 'pending') ||
+      suggestionResponseSubmissionStatus !== 'idle'
+    )
+      return;
+    void submitSuggestionResponses();
+  }
 
   function handleRetrySuggestionResponse() {
-    suggestionResponseSubmissionStarted.current = false;
     setSuggestionResponseConfirmation('');
     setSuggestionResponseError('');
     setSuggestionResponseSubmissionStatus('idle');
+    void submitSuggestionResponses();
   }
 
   return (
@@ -220,6 +217,17 @@ export function SuggestionsSection({
           ))}
         </div>
       )}
+      <button
+        type="button"
+        onClick={handleContinue}
+        disabled={
+          suggestions.length === 0 ||
+          suggestions.some((suggestion) => suggestion.decision === 'pending') ||
+          suggestionResponseSubmissionStatus !== 'idle'
+        }
+      >
+        Continue
+      </button>
       {suggestionResponseSubmissionStatus === 'submitting' && <p>Submitting review...</p>}
       {suggestionResponseError && <p role="alert">{suggestionResponseError}</p>}
       {suggestionResponseSubmissionStatus === 'failed' && (
