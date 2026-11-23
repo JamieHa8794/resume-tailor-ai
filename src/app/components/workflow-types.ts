@@ -25,6 +25,7 @@ export type SuggestionResponseSubmissionStatus =
 
 export type Suggestion = {
   id: string;
+  title: string;
   originalBullet: string;
   suggestedBullet: string;
   initialSuggestedBullet: string;

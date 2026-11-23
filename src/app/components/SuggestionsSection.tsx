@@ -10,7 +10,7 @@ import type {
 
 type SuggestionResponse = Pick<
   Suggestion,
-  'id' | 'originalBullet' | 'suggestedBullet'
+  'id' | 'title' | 'originalBullet' | 'suggestedBullet'
 >;
 type SuggestionsSectionProps = {
   clarificationResults: ClarificationResult[];
