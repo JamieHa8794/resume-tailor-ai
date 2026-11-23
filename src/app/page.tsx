@@ -20,6 +20,10 @@ export default function ResumeTailor() {
     ClarificationResult[]
   >([]);
   const [finalOutput, setFinalOutput] = useState('');
+  const [suggestionCounts, setSuggestionCounts] = useState({
+    applied: 0,
+    total: 0,
+  });
 
   function handleAnalysisComplete(
     needsClarification: boolean,
@@ -28,6 +32,7 @@ export default function ResumeTailor() {
     setClarifications(nextClarifications);
     setClarificationResults([]);
     setFinalOutput('');
+    setSuggestionCounts({ applied: 0, total: 0 });
     setWorkflowStage(needsClarification ? 'clarifying' : 'suggestions');
   }
 
@@ -41,16 +46,19 @@ export default function ResumeTailor() {
     setClarifications([]);
     setClarificationResults([]);
     setFinalOutput('');
+    setSuggestionCounts({ applied: 0, total: 0 });
   }
 
   function handleEditClarifications() {
     setWorkflowStage('clarifying');
     setFinalOutput('');
+    setSuggestionCounts({ applied: 0, total: 0 });
   }
 
   function handleEditSuggestions() {
     setWorkflowStage('suggestions');
     setFinalOutput('');
+    setSuggestionCounts({ applied: 0, total: 0 });
   }
 
   return (
@@ -82,8 +90,9 @@ export default function ResumeTailor() {
           clarificationResults={clarificationResults}
           workflowStage={workflowStage}
           onEdit={handleEditSuggestions}
-          onComplete={(output) => {
+          onComplete={(output, appliedCount, totalCount) => {
             setFinalOutput(output);
+            setSuggestionCounts({ applied: appliedCount, total: totalCount });
             setWorkflowStage('complete');
           }}
         />
@@ -91,6 +100,8 @@ export default function ResumeTailor() {
       {workflowStage === 'complete' && (
         <FinalOutputSection
           finalOutput={finalOutput}
+          appliedCount={suggestionCounts.applied}
+          totalCount={suggestionCounts.total}
         />
       )}
     </main>

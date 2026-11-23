@@ -15,7 +15,11 @@ type SuggestionResponse = Pick<
 type SuggestionsSectionProps = {
   clarificationResults: ClarificationResult[];
   workflowStage: WorkflowStage;
-  onComplete: (finalOutput: string) => void;
+  onComplete: (
+    finalOutput: string,
+    appliedCount: number,
+    totalCount: number,
+  ) => void;
   onEdit: () => void;
 };
 
@@ -165,7 +169,15 @@ export function SuggestionsSection({
         );
       setSuggestionResponseConfirmation(result.message);
       setSuggestionResponseSubmissionStatus('succeeded');
-      onComplete(result.finalOutput);
+      onComplete(
+        result.finalOutput,
+        suggestions.filter(
+          (suggestion) =>
+            suggestion.decision === 'accepted' ||
+            suggestion.decision === 'edited',
+        ).length,
+        suggestions.length,
+      );
     } catch (requestError) {
       setSuggestionResponseSubmissionStatus('failed');
       setSuggestionResponseError(

@@ -1,8 +1,16 @@
 import styles from './FinalOutputSection.module.css';
 
-type FinalOutputSectionProps = { finalOutput: string };
+type FinalOutputSectionProps = {
+  finalOutput: string;
+  appliedCount: number;
+  totalCount: number;
+};
 
-export function FinalOutputSection({ finalOutput }: FinalOutputSectionProps) {
+export function FinalOutputSection({
+  finalOutput,
+  appliedCount,
+  totalCount,
+}: FinalOutputSectionProps) {
   async function handleCopyFinalOutput() {
     await navigator.clipboard.writeText(finalOutput);
   }
@@ -12,6 +20,9 @@ export function FinalOutputSection({ finalOutput }: FinalOutputSectionProps) {
       <h2 id="final-output-heading">Final Output</h2>
       <p className={styles.subtitle}>
         A complete, edited résumé is ready to copy as a single document.
+      </p>
+      <p>
+        {appliedCount} of {totalCount} suggested changes applied
       </p>
       <div className={styles.documentSurface}>
         <div className={styles.documentToolbar}>
