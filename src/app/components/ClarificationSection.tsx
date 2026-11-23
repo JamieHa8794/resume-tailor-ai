@@ -1,19 +1,14 @@
-import { useEffect, useState } from 'react';
-import { ClarificationCard } from './ClarificationCard';
+import { useState } from 'react';
 import type {
   Clarification,
-  ClarificationStatus,
+  ClarificationResult,
   WorkflowStage,
 } from './workflow-types';
 
-type ClarificationState = Clarification & {
-  answer: string;
-  status: ClarificationStatus;
-};
 type ClarificationSectionProps = {
   workflowStage: WorkflowStage;
   clarifications: Clarification[];
-  onComplete: () => void;
+  onComplete: (results: ClarificationResult[]) => void;
   onEditInputs: () => void;
 };
 
@@ -23,28 +18,18 @@ export function ClarificationSection({
   onComplete,
   onEditInputs,
 }: ClarificationSectionProps) {
-  const [questions, setQuestions] = useState<ClarificationState[]>(() =>
-    clarifications.map((clarification) => ({
-      ...clarification,
-      answer: '',
-      status: 'pending',
-    })),
-  );
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (
-      workflowStage === 'clarifying' &&
-      questions.length > 0 &&
-      questions.every(({ status }) => status !== 'pending')
-    )
-      onComplete();
-  }, [onComplete, questions, workflowStage]);
-
-  function updateQuestion(id: string, update: Partial<ClarificationState>) {
-    setQuestions((current) =>
-      current.map((question) =>
-        question.id === id ? { ...question, ...update } : question,
-      ),
+  function handleContinue() {
+    onComplete(
+      clarifications.map((clarification) => {
+        const answer = answers[clarification.id] ?? '';
+        return {
+          ...clarification,
+          answer,
+          status: answer.trim().length > 0 ? 'answered' : 'skipped',
+        };
+      }),
     );
   }
 
@@ -56,27 +41,28 @@ export function ClarificationSection({
       )}
       {workflowStage === 'clarifying' && (
         <div className="clarification-list">
-          {questions.map((question) => (
-            <ClarificationCard
-              key={question.id}
-              question={question}
-              onAnswerChange={(answer) =>
-                updateQuestion(question.id, { answer })
-              }
-              onSubmit={() =>
-                updateQuestion(question.id, { status: 'answered' })
-              }
-              onSkip={() => updateQuestion(question.id, { status: 'skipped' })}
-              onEdit={() =>
-                updateQuestion(
-                  question.id,
-                  question.status === 'skipped'
-                    ? { status: 'pending', answer: '' }
-                    : { status: 'pending' },
-                )
-              }
-            />
+          {clarifications.map((question) => (
+            <div className="clarification-panel" key={question.id}>
+              <p>{question.question}</p>
+              <label className="field">
+                <span>Your answer</span>
+                <textarea
+                  value={answers[question.id] ?? ''}
+                  onChange={(event) =>
+                    setAnswers((current) => ({
+                      ...current,
+                      [question.id]: event.target.value,
+                    }))
+                  }
+                  placeholder="Enter an answer, or leave blank to skip"
+                  rows={5}
+                />
+              </label>
+            </div>
           ))}
+          <button type="button" onClick={handleContinue}>
+            Continue
+          </button>
         </div>
       )}
       {(workflowStage === 'suggestions' || workflowStage === 'complete') && (

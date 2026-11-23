@@ -6,12 +6,19 @@ import { FinalOutputSection } from './components/FinalOutputSection';
 import { InputSection } from './components/InputSection';
 import { LandingSection } from './components/LandingSection';
 import { SuggestionsSection } from './components/SuggestionsSection';
-import type { Clarification, WorkflowStage } from './components/workflow-types';
+import type {
+  Clarification,
+  ClarificationResult,
+  WorkflowStage,
+} from './components/workflow-types';
 
 export default function ResumeTailor() {
   const [workflowStage, setWorkflowStage] =
     useState<WorkflowStage>('landing');
   const [clarifications, setClarifications] = useState<Clarification[]>([]);
+  const [clarificationResults, setClarificationResults] = useState<
+    ClarificationResult[]
+  >([]);
   const [finalOutput, setFinalOutput] = useState('');
 
   function handleAnalysisComplete(
@@ -19,17 +26,20 @@ export default function ResumeTailor() {
     nextClarifications: Clarification[],
   ) {
     setClarifications(nextClarifications);
+    setClarificationResults([]);
     setFinalOutput('');
     setWorkflowStage(needsClarification ? 'clarifying' : 'suggestions');
   }
 
-  function handleClarificationComplete() {
+  function handleClarificationComplete(results: ClarificationResult[]) {
+    setClarificationResults(results);
     setWorkflowStage('suggestions');
   }
 
   function handleEditInputs() {
     setWorkflowStage('input');
     setClarifications([]);
+    setClarificationResults([]);
     setFinalOutput('');
   }
 
@@ -58,6 +68,7 @@ export default function ResumeTailor() {
       )}
       {(workflowStage === 'suggestions' || workflowStage === 'complete') && (
         <SuggestionsSection
+          clarificationResults={clarificationResults}
           onComplete={(output) => {
             setFinalOutput(output);
             setWorkflowStage('complete');

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SuggestionCard } from './SuggestionCard';
 import type {
+  ClarificationResult,
   SuggestionResponseSubmissionStatus,
   Suggestion,
 } from './workflow-types';
@@ -9,9 +10,15 @@ type SuggestionResponse = Pick<
   Suggestion,
   'id' | 'originalBullet' | 'suggestedBullet'
 >;
-type SuggestionsSectionProps = { onComplete: (finalOutput: string) => void };
+type SuggestionsSectionProps = {
+  clarificationResults: ClarificationResult[];
+  onComplete: (finalOutput: string) => void;
+};
 
-export function SuggestionsSection({ onComplete }: SuggestionsSectionProps) {
+export function SuggestionsSection({
+  clarificationResults,
+  onComplete,
+}: SuggestionsSectionProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [suggestionsError, setSuggestionsError] = useState('');
@@ -26,7 +33,11 @@ export function SuggestionsSection({ onComplete }: SuggestionsSectionProps) {
     setIsLoadingSuggestions(true);
     setSuggestionsError('');
     try {
-      const response = await fetch('/api/suggestions', { method: 'POST' });
+      const response = await fetch('/api/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clarificationResults }),
+      });
       const result: { suggestions?: SuggestionResponse[]; error?: unknown } =
         await response.json();
       if (!response.ok || !Array.isArray(result.suggestions))

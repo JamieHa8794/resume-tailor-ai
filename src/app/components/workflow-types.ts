@@ -5,6 +5,11 @@ export type Clarification = {
 
 export type ClarificationStatus = 'pending' | 'answered' | 'skipped';
 
+export type ClarificationResult = Clarification & {
+  answer: string;
+  status: Exclude<ClarificationStatus, 'pending'>;
+};
+
 export type WorkflowStage =
   | 'landing'
   | 'input'
