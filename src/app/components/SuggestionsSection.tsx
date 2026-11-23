@@ -26,10 +26,15 @@ export function SuggestionsSection({
   onEdit,
 }: SuggestionsSectionProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [selectedSuggestionId, setSelectedSuggestionId] = useState<
+    string | null
+  >(null);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [suggestionsError, setSuggestionsError] = useState('');
-  const [suggestionResponseSubmissionStatus, setSuggestionResponseSubmissionStatus] =
-    useState<SuggestionResponseSubmissionStatus>('idle');
+  const [
+    suggestionResponseSubmissionStatus,
+    setSuggestionResponseSubmissionStatus,
+  ] = useState<SuggestionResponseSubmissionStatus>('idle');
   const [suggestionResponseError, setSuggestionResponseError] = useState('');
   const [suggestionResponseConfirmation, setSuggestionResponseConfirmation] =
     useState('');
@@ -60,6 +65,7 @@ export function SuggestionsSection({
           isEditing: false,
         })),
       );
+      setSelectedSuggestionId(result.suggestions[0]?.id ?? null);
     } catch (requestError) {
       setSuggestionsError(
         requestError instanceof Error
@@ -130,13 +136,11 @@ export function SuggestionsSection({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          suggestions: suggestions.map(
-            ({ id, decision, selectedBullet }) => ({
-              id,
-              decision,
-              selectedBullet,
-            }),
-          ),
+          suggestions: suggestions.map(({ id, decision, selectedBullet }) => ({
+            id,
+            decision,
+            selectedBullet,
+          })),
         }),
       });
       const result: {
@@ -201,40 +205,88 @@ export function SuggestionsSection({
       <div className={styles.headingRow}>
         <h2 id="suggestion-heading">Suggested Changes</h2>
         {workflowStage === 'complete' && (
-          <button className={styles.editButton} type="button" onClick={handleEdit}>
+          <button
+            className={styles.editButton}
+            type="button"
+            onClick={handleEdit}
+          >
             Edit
           </button>
         )}
       </div>
-      {isLoadingSuggestions && <p className={styles.status}>Generating suggestions...</p>}
-      {suggestionsError && <p className={styles.error} role="alert">{suggestionsError}</p>}
+      {isLoadingSuggestions && (
+        <p className={styles.status}>Generating suggestions...</p>
+      )}
+      {suggestionsError && (
+        <p className={styles.error} role="alert">
+          {suggestionsError}
+        </p>
+      )}
       {suggestionsError && !isLoadingSuggestions && (
-        <button className={styles.secondaryButton} type="button" onClick={() => void loadSuggestions()}>
+        <button
+          className={styles.secondaryButton}
+          type="button"
+          onClick={() => void loadSuggestions()}
+        >
           Retry
         </button>
       )}
       {!isLoadingSuggestions && suggestions.length > 0 && (
-        <div className={styles.suggestionList}>
-          {suggestions.map((suggestion) => (
-            <SuggestionCard
-              key={suggestion.id}
-              suggestion={suggestion}
-              actionsDisabled={suggestionResponseSubmissionStatus !== 'idle'}
-              onUpdate={updateSuggestion}
-              onAccept={handleAccept}
-              onReject={handleReject}
-              onEdit={(id) => updateSuggestion(id, { isEditing: true })}
-              onSave={handleSave}
-              onCancelEdit={handleCancelEdit}
-              onChangeDecision={(id) =>
-                updateSuggestion(id, {
-                  decision: 'pending',
-                  selectedBullet: null,
-                })
-              }
-              onRevert={handleRevert}
-            />
-          ))}
+        <div className={styles.workspace}>
+          <nav className={styles.navigator} aria-label="Suggestions">
+            <h3>Suggestions</h3>
+            {suggestions.map((suggestion) => {
+              const isConfirmed = suggestion.decision !== 'pending';
+              return (
+                <button
+                  className={`${styles.navigatorRow} ${
+                    suggestion.id === selectedSuggestionId
+                      ? styles.selectedRow
+                      : ''
+                  }`}
+                  key={suggestion.id}
+                  type="button"
+                  aria-pressed={suggestion.id === selectedSuggestionId}
+                  onClick={() => setSelectedSuggestionId(suggestion.id)}
+                >
+                  <span className={styles.navigatorTitle}>
+                    {suggestion.title}
+                  </span>
+                  {isConfirmed && (
+                    <span className={styles.confirmedStatus}>
+                      <span aria-hidden="true">✓</span> Confirmed
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+          <div className={styles.detailPanel}>
+            {suggestions
+              .filter((suggestion) => suggestion.id === selectedSuggestionId)
+              .map((suggestion) => (
+                <SuggestionCard
+                  key={suggestion.id}
+                  suggestion={suggestion}
+                  actionsDisabled={
+                    suggestionResponseSubmissionStatus !== 'idle'
+                  }
+                  onUpdate={updateSuggestion}
+                  onAccept={handleAccept}
+                  onReject={handleReject}
+                  onEdit={(id) => updateSuggestion(id, { isEditing: true })}
+                  onSave={handleSave}
+                  onCancelEdit={handleCancelEdit}
+                  onChangeDecision={(id) =>
+                    updateSuggestion(id, {
+                      decision: 'pending',
+                      selectedBullet: null,
+                    })
+                  }
+                  onRevert={handleRevert}
+                />
+              ))}
+          </div>
         </div>
       )}
       <button
@@ -249,14 +301,26 @@ export function SuggestionsSection({
       >
         Continue
       </button>
-      {suggestionResponseSubmissionStatus === 'submitting' && <p className={styles.status}>Submitting review...</p>}
-      {suggestionResponseError && <p className={styles.error} role="alert">{suggestionResponseError}</p>}
+      {suggestionResponseSubmissionStatus === 'submitting' && (
+        <p className={styles.status}>Submitting review...</p>
+      )}
+      {suggestionResponseError && (
+        <p className={styles.error} role="alert">
+          {suggestionResponseError}
+        </p>
+      )}
       {suggestionResponseSubmissionStatus === 'failed' && (
-        <button className={styles.secondaryButton} type="button" onClick={handleRetrySuggestionResponse}>
+        <button
+          className={styles.secondaryButton}
+          type="button"
+          onClick={handleRetrySuggestionResponse}
+        >
           Retry
         </button>
       )}
-      {suggestionResponseConfirmation && <p className={styles.confirmation}>{suggestionResponseConfirmation}</p>}
+      {suggestionResponseConfirmation && (
+        <p className={styles.confirmation}>{suggestionResponseConfirmation}</p>
+      )}
     </section>
   );
 }

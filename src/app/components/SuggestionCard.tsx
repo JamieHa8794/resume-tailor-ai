@@ -29,11 +29,7 @@ export function SuggestionCard({
   return (
     <article className={styles.suggestionPanel}>
       <div className={styles.comparisonBlock}>
-        <h3>Original resume bullet</h3>
-        <p className={styles.originalWording}>{suggestion.originalBullet}</p>
-      </div>
-      <div className={styles.comparisonBlock}>
-        <h3>Suggested replacement</h3>
+        <h3>Suggested wording</h3>
         {suggestion.isEditing ? (
           <textarea
             className={styles.editingField}
@@ -42,12 +38,18 @@ export function SuggestionCard({
             onChange={(event) =>
               onUpdate(suggestion.id, { suggestedBullet: event.target.value })
             }
-            rows={4}
+            rows={1}
             disabled={actionsDisabled}
           />
         ) : (
-          <p className={styles.suggestedWording}>{suggestion.suggestedBullet}</p>
+          <p className={styles.suggestedWording}>
+            {suggestion.suggestedBullet}
+          </p>
         )}
+      </div>
+      <div className={styles.comparisonBlock}>
+        <h3>Original wording</h3>
+        <p className={styles.originalWording}>{suggestion.originalBullet}</p>
       </div>
       <div className={styles.buttonRow}>
         {suggestion.isEditing ? (
