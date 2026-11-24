@@ -6,6 +6,7 @@ import { FinalOutputSection } from './components/FinalOutputSection';
 import { InputSection } from './components/InputSection';
 import { LandingSection } from './components/LandingSection';
 import { SuggestionsSection } from './components/SuggestionsSection';
+import { WorkflowHeader } from './components/WorkflowHeader';
 import type {
   Clarification,
   ClarificationResult,
@@ -63,12 +64,12 @@ export default function ResumeTailor() {
 
   return (
     <main className="page-shell">
+      <WorkflowHeader workflowStage={workflowStage} />
       {workflowStage === 'landing' && (
         <LandingSection onStart={() => setWorkflowStage('input')} />
       )}
       {workflowStage !== 'landing' && (
         <>
-          <h1>Resume Tailor App</h1>
           <InputSection
             workflowStage={workflowStage}
             onAnalysisComplete={handleAnalysisComplete}

@@ -3,20 +3,6 @@
   min-height: calc(100vh - 80px);
 }
 
-.header {
-  align-items: center;
-  border-bottom: 1px solid var(--sand);
-  display: flex;
-  height: 64px;
-}
-
-.wordmark {
-  color: var(--espresso);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  line-height: 30px;
-}
-
 .content {
   align-items: center;
   display: flex;

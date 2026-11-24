@@ -1,0 +1,57 @@
+.header {
+  align-items: center;
+  background: var(--linen);
+  border-bottom: 1px solid var(--sand);
+  display: flex;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.wordmark {
+  color: var(--espresso);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  line-height: 30px;
+}
+
+.progress {
+  align-items: center;
+  color: var(--mocha);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  gap: var(--space-8);
+  justify-content: flex-end;
+  line-height: 24px;
+}
+
+.progressItem {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-8);
+}
+
+.active {
+  color: var(--raspberry-deep);
+  font-weight: 700;
+}
+
+.separator {
+  color: var(--taupe);
+}
+
+@media (max-width: 700px) {
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .progress {
+    justify-content: flex-start;
+  }
+}
