@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ClarificationSection } from './components/ClarificationSection';
 import { FinalOutputSection } from './components/FinalOutputSection';
 import { InputSection } from './components/InputSection';
@@ -13,9 +13,28 @@ import type {
   WorkflowStage,
 } from './components/workflow-types';
 
+function scrollToWorkflowHeading(workflowStage: WorkflowStage) {
+  const headingIds: Record<WorkflowStage, string> = {
+    landing: 'landing-heading',
+    input: 'input-heading',
+    clarifying: 'clarification-heading',
+    suggestions: 'suggestion-heading',
+    complete: 'final-output-heading',
+  };
+  const heading = document.getElementById(headingIds[workflowStage]);
+  const header = document.getElementById('workflow-header');
+  if (!heading || !header) return;
+
+  const headerOffset = header.getBoundingClientRect().height + 16;
+  const headingTop = heading.getBoundingClientRect().top + window.scrollY;
+  window.scrollTo({
+    top: Math.max(0, headingTop - headerOffset),
+    behavior: 'smooth',
+  });
+}
+
 export default function ResumeTailor() {
-  const [workflowStage, setWorkflowStage] =
-    useState<WorkflowStage>('landing');
+  const [workflowStage, setWorkflowStage] = useState<WorkflowStage>('landing');
   const [clarifications, setClarifications] = useState<Clarification[]>([]);
   const [clarificationResults, setClarificationResults] = useState<
     ClarificationResult[]
@@ -25,6 +44,25 @@ export default function ResumeTailor() {
     applied: 0,
     total: 0,
   });
+  const previousWorkflowStage = useRef<WorkflowStage | null>(null);
+
+  useEffect(() => {
+    if (previousWorkflowStage.current === null) {
+      previousWorkflowStage.current = workflowStage;
+      return;
+    }
+
+    if (previousWorkflowStage.current === workflowStage) {
+      return;
+    }
+
+    previousWorkflowStage.current = workflowStage;
+    const frame = window.requestAnimationFrame(() => {
+      scrollToWorkflowHeading(workflowStage);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [workflowStage]);
 
   function handleAnalysisComplete(
     needsClarification: boolean,
@@ -90,6 +128,11 @@ export default function ResumeTailor() {
         <SuggestionsSection
           clarificationResults={clarificationResults}
           workflowStage={workflowStage}
+          onLoaded={() => {
+            if (workflowStage === 'suggestions') {
+              scrollToWorkflowHeading('suggestions');
+            }
+          }}
           onEdit={handleEditSuggestions}
           onComplete={(output, appliedCount, totalCount) => {
             setFinalOutput(output);

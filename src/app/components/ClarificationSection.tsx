@@ -35,7 +35,11 @@ export function ClarificationSection({
   }
 
   return (
-    <section className={styles.section} aria-labelledby="clarification-heading">
+    <section
+      id="clarifying-section"
+      className={styles.section}
+      aria-labelledby="clarification-heading"
+    >
       <div className={styles.headingRow}>
         <h2 id="clarification-heading">Clarification</h2>
         {(workflowStage === 'suggestions' || workflowStage === 'complete') &&

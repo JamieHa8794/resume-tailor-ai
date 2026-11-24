@@ -16,7 +16,11 @@ export function FinalOutputSection({
   }
 
   return (
-    <section className={styles.section} aria-labelledby="final-output-heading">
+    <section
+      id="complete-section"
+      className={styles.section}
+      aria-labelledby="final-output-heading"
+    >
       <h2 id="final-output-heading">Your tailored résumé is ready</h2>
       <p className={styles.subtitle}>
         Copy the full text into your résumé document.

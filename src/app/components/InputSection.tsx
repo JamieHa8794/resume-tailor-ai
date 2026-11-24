@@ -79,7 +79,11 @@ export function InputSection({
   }
 
   return (
-    <section className={styles.section} aria-labelledby="input-heading">
+    <section
+      id="input-section"
+      className={styles.section}
+      aria-labelledby="input-heading"
+    >
       <div className={styles.headingRow}>
         <h2 id="input-heading">Inputs</h2>
         {workflowStage !== 'input' && (

@@ -21,6 +21,7 @@ type SuggestionsSectionProps = {
     totalCount: number,
   ) => void;
   onEdit: () => void;
+  onLoaded: () => void;
 };
 
 export function SuggestionsSection({
@@ -28,6 +29,7 @@ export function SuggestionsSection({
   workflowStage,
   onComplete,
   onEdit,
+  onLoaded,
 }: SuggestionsSectionProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selectedSuggestionId, setSelectedSuggestionId] = useState<
@@ -78,6 +80,7 @@ export function SuggestionsSection({
       );
     } finally {
       setIsLoadingSuggestions(false);
+      window.requestAnimationFrame(onLoaded);
     }
   }
 
@@ -213,7 +216,11 @@ export function SuggestionsSection({
   }
 
   return (
-    <section className={styles.section} aria-labelledby="suggestion-heading">
+    <section
+      id="suggestions-section"
+      className={styles.section}
+      aria-labelledby="suggestion-heading"
+    >
       <div className={styles.headingRow}>
         <h2 id="suggestion-heading">Suggested Changes</h2>
         {workflowStage === 'complete' && (

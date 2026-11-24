@@ -20,7 +20,7 @@ export function WorkflowHeader({ workflowStage }: WorkflowHeaderProps) {
   const activeStage = getActiveStage(workflowStage);
 
   return (
-    <header className={styles.header}>
+    <header id="workflow-header" className={styles.header}>
       <p className={styles.wordmark}>Resume Tailor AI</p>
       <nav className={styles.progress} aria-label="Workflow progress">
         {stages.map(({ label, stage }, index) => (
