@@ -26,11 +26,20 @@
   padding: 10px 20px;
 }
 .editButton {
+  border: 0;
+  color: var(--raspberry-deep);
+  min-height: 0;
+  padding: 0;
   position: absolute;
   right: 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
   top: 0;
 }
-.editButton:hover,
+.editButton:hover {
+  background: transparent;
+  color: var(--raspberry);
+}
 .secondaryButton:hover:not(:disabled) {
   background: var(--blush);
 }
@@ -213,7 +222,7 @@ button:disabled {
     padding-right: 96px;
   }
   .editButton {
-    padding: 8px 16px;
+    padding: 0;
   }
   .suggestedWording {
     font-size: var(--text-2xl);

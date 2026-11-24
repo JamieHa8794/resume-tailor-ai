@@ -90,27 +90,27 @@ export function InputSection({
       </div>
       <div className={styles.inputGrid}>
         <label className={styles.field}>
-          <span>Resume Input</span>
+          <span>Your résumé</span>
           <textarea
             value={resume}
             onChange={(event) => {
               setResume(event.target.value);
               setInputError('');
             }}
-            placeholder="Paste your resume content here"
+            placeholder="Paste your résumé here…"
             rows={12}
             disabled={workflowStage !== 'input' || isAnalyzing}
           />
         </label>
         <label className={styles.field}>
-          <span>Job Description</span>
+          <span>Job description</span>
           <textarea
             value={jobDescription}
             onChange={(event) => {
               setJobDescription(event.target.value);
               setInputError('');
             }}
-            placeholder="Paste the job description here"
+            placeholder="Paste the job description here…"
             rows={12}
             disabled={workflowStage !== 'input' || isAnalyzing}
           />

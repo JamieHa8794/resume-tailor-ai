@@ -11,6 +11,7 @@ body {
 }
 
 body {
+  background: var(--linen);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #171717;
@@ -20,7 +21,7 @@ body {
 .page-shell {
   margin: 0 auto;
   max-width: 1100px;
-  padding: 40px 24px;
+  padding: 0 24px 40px;
 }
 
 h1,
@@ -30,7 +31,13 @@ h3 {
 }
 
 section + section {
-  margin-top: 40px;
+  border-top: 1px solid var(--sand);
+  margin-top: 64px;
+  padding-top: 64px;
+}
+
+.page-shell > header + section {
+  margin-top: 64px;
 }
 
 .helper-text {
